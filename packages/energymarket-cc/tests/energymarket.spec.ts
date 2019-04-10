@@ -16,7 +16,7 @@ import { MarketParticipant, ParticipantType, SmartMeterReading } from '../src/mo
 import { ENGINE_METHOD_ALL } from 'constants';
 import { debug } from 'util';
 import { read } from 'fs';
-import { parentPort } from 'worker_threads';
+// import { parentPort } from 'worker_threads';
 
 describe('Energymarket', () => {
   let adapter: MockControllerAdapter;
