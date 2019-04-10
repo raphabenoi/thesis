@@ -3,10 +3,10 @@ export declare enum AuctionStatus {
     OPEN = 0,
     CLOSED = 1,
     CLEARED = 2,
-    ESCROWED = 3,
+    ESCROWED = 3
 }
 export declare class Auction extends ConvectorModel<Auction> {
-    readonly type: string;
+    readonly type = "de.rli.hypenergy.auction";
     status: AuctionStatus;
     readonly start: number;
     readonly end: number;
