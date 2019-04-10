@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "txTimeout": 300000,
+  "skipInit": true,
+  "channel": "ch1",
+  "keyStore": "/Users/raphaelbenoit/hyperledger-fabric-network/.hfc-org1",
+  "//**INSIDE-DOCKER**//keyStore": "/config/.hfc-org1",
+  "networkProfile": "/Users/raphaelbenoit/hyperledger-fabric-network/network-profiles/org1.network-profile.yaml",
+  "//**INSIDE-DOCKER**//networkProfile": "/config/network-profiles/org1.network-profile.inside-docker.yaml",
+  "controllers": [
+    {
+      "name": "energymarket-cc",
+      "version": "file:./packages/energymarket-cc",
+      "controller": "EnergymarketController"
+    }
+  ],
+  "policy": {
+    "identities": [
+      { "role": { "name": "member", "mspId": "Org1MSP" }},
+      { "role": { "name": "member", "mspId": "Org2MSP" }}
+    ],
+    "policy": {
+      "1-of": [{ "signed-by": 0 }, { "signed-by": 1 }]
+    }
+  }
+}
