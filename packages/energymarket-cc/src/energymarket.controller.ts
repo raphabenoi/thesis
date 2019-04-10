@@ -185,46 +185,46 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     await bid.save();
     return bid;
     
-    /** Get the 'Auction' instance on which the sender is bidding */
-    const auction = await Auction.getOne(bid.auctionId);
-    const txTimestamp = this.tx.stub.getTxDate().getTime();
+    // /** Get the 'Auction' instance on which the sender is bidding */
+    // const auction = await Auction.getOne(bid.auctionId);
+    // const txTimestamp = this.tx.stub.getTxDate().getTime();
 
-    /** Check if 'Auction' is still 'OPEN' for new bids */
-    if (txTimestamp >= auction.end) {
-      /** If it is the first bid after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
-      if(auction.status === 0) {
-        auction.status = 1;
-        await auction.save();
-      }
+    // /** Check if 'Auction' is still 'OPEN' for new bids */
+    // if (txTimestamp >= auction.end) {
+    //   /** If it is the first bid after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
+    //   if(auction.status === 0) {
+    //     auction.status = 1;
+    //     await auction.save();
+    //   }
 
-      throw new Error("The auction is already closed and does not accept new bids")
-    }
+    //   throw new Error("The auction is already closed and does not accept new bids")
+    // }
 
-    /** If 'Auction' still 'OPEN' save the bid */
-    if (txTimestamp < auction.end) {
-      /** Get the 'MarketParticipant' invoking this transaction */
-      const bidder = await MarketParticipant.getOne(this.sender);
+    // /** If 'Auction' still 'OPEN' save the bid */
+    // if (txTimestamp < auction.end) {
+    //   /** Get the 'MarketParticipant' invoking this transaction */
+    //   const bidder = await MarketParticipant.getOne(this.sender);
 
-      /** Check if bidder has enough coins plus a buffer of 10€
-       * @todo Make the buffer a variable. Maybe store it in the 'Market'
-       * @todo Change buffer to -1000 !!!
-       */
-      if ((bidder.coinBalance + 1000) < (bid.amount * bid.price)) {
-        throw new Error("Bidder does not have enough coins to place this bid")
-      } else {
-        /** Freeze the coins relative to the bid size */
-        bidder.coinBalance -= (bid.amount * bid.price);
-        bidder.frozenCoins += (bid.amount * bid.price);
+    //   /** Check if bidder has enough coins plus a buffer of 10€
+    //    * @todo Make the buffer a variable. Maybe store it in the 'Market'
+    //    * @todo Change buffer to -1000 !!!
+    //    */
+    //   if ((bidder.coinBalance + 1000) < (bid.amount * bid.price)) {
+    //     throw new Error("Bidder does not have enough coins to place this bid")
+    //   } else {
+    //     /** Freeze the coins relative to the bid size */
+    //     bidder.coinBalance -= (bid.amount * bid.price);
+    //     bidder.frozenCoins += (bid.amount * bid.price);
 
-        /** Adds (or overwrites) the sender of the bid as the identity invoking the transaction */
-        bid.sender = this.sender;
-      }
+    //     /** Adds (or overwrites) the sender of the bid as the identity invoking the transaction */
+    //     bid.sender = this.sender;
+    //   }
 
-      /** Update bidder and save the newly placed bid */
-      await bidder.save();
-      await bid.save();
-      return bid;
-    }
+    //   /** Update bidder and save the newly placed bid */
+    //   await bidder.save();
+    //   await bid.save();
+    //   return bid;
+    // }
   
   }
 
@@ -287,31 +287,31 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     await ask.save();
     return ask;
 
-    /** Get the 'Auction' instance on which the sender is askding */
-    const auction = await Auction.getOne(ask.auctionId);
-    const txTimestamp = this.tx.stub.getTxDate().getTime();
+    // /** Get the 'Auction' instance on which the sender is askding */
+    // const auction = await Auction.getOne(ask.auctionId);
+    // const txTimestamp = this.tx.stub.getTxDate().getTime();
     
-    /** Check if 'Auction' is still 'OPEN' for new asks */
-    if (txTimestamp >= auction.end) {
+    // /** Check if 'Auction' is still 'OPEN' for new asks */
+    // if (txTimestamp >= auction.end) {
 
-      /** If it is the first ask after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
-      if(auction.status === 0) {
-        auction.status = 1;
-        await auction.save();
-      }
+    //   /** If it is the first ask after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
+    //   if(auction.status === 0) {
+    //     auction.status = 1;
+    //     await auction.save();
+    //   }
 
-      throw new Error("The auction is already closed and does not accept new asks")
-    }
+    //   throw new Error("The auction is already closed and does not accept new asks")
+    // }
 
-    /** If 'Auction' still 'OPEN' save the ask */
-    if (txTimestamp < auction.end) {
+    // /** If 'Auction' still 'OPEN' save the ask */
+    // if (txTimestamp < auction.end) {
 
-      /** Adds (or overwrites) the sender of the ask as the identity invoking the transaction */
-      ask.sender = this.sender;
+    //   /** Adds (or overwrites) the sender of the ask as the identity invoking the transaction */
+    //   ask.sender = this.sender;
       
-      /** Save the newly placed ask */
-      await ask.save();
-    }
+    //   /** Save the newly placed ask */
+    //   await ask.save();
+    // }
   }
 
   /** Gets all 'Ask' instances.

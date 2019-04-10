@@ -143,45 +143,12 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.placeBid = function (bid) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var auction, txTimestamp, bidder;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, bid.save()];
                     case 1:
                         _a.sent();
                         return [2, bid];
-                    case 2:
-                        auction = _a.sent();
-                        txTimestamp = this.tx.stub.getTxDate().getTime();
-                        if (!(txTimestamp >= auction.end)) return [3, 5];
-                        if (!(auction.status === 0)) return [3, 4];
-                        auction.status = 1;
-                        return [4, auction.save()];
-                    case 3:
-                        _a.sent();
-                        _a.label = 4;
-                    case 4: throw new Error("The auction is already closed and does not accept new bids");
-                    case 5:
-                        if (!(txTimestamp < auction.end)) return [3, 9];
-                        return [4, marketParticipant_model_1.MarketParticipant.getOne(this.sender)];
-                    case 6:
-                        bidder = _a.sent();
-                        if ((bidder.coinBalance + 1000) < (bid.amount * bid.price)) {
-                            throw new Error("Bidder does not have enough coins to place this bid");
-                        }
-                        else {
-                            bidder.coinBalance -= (bid.amount * bid.price);
-                            bidder.frozenCoins += (bid.amount * bid.price);
-                            bid.sender = this.sender;
-                        }
-                        return [4, bidder.save()];
-                    case 7:
-                        _a.sent();
-                        return [4, bid.save()];
-                    case 8:
-                        _a.sent();
-                        return [2, bid];
-                    case 9: return [2];
                 }
             });
         });
@@ -228,32 +195,12 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.placeAsk = function (ask) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var auction, txTimestamp;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, ask.save()];
                     case 1:
                         _a.sent();
                         return [2, ask];
-                    case 2:
-                        auction = _a.sent();
-                        txTimestamp = this.tx.stub.getTxDate().getTime();
-                        if (!(txTimestamp >= auction.end)) return [3, 5];
-                        if (!(auction.status === 0)) return [3, 4];
-                        auction.status = 1;
-                        return [4, auction.save()];
-                    case 3:
-                        _a.sent();
-                        _a.label = 4;
-                    case 4: throw new Error("The auction is already closed and does not accept new asks");
-                    case 5:
-                        if (!(txTimestamp < auction.end)) return [3, 7];
-                        ask.sender = this.sender;
-                        return [4, ask.save()];
-                    case 6:
-                        _a.sent();
-                        _a.label = 7;
-                    case 7: return [2];
                 }
             });
         });
