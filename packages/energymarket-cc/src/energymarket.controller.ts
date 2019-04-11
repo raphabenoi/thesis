@@ -41,6 +41,9 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     @Param(MarketParticipant)
     marketParticipant: MarketParticipant
   ) {
+    /** @todo remove next line. It is only for testing purposes */
+    marketParticipant.id = this.sender;
+    
     /** Saves the new 'MarketParticipant' to state */
     await marketParticipant.save();
   }
@@ -182,6 +185,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     /** For testing purposes the placed bit is immediatly saved
      * @todo Remove next 2 lines when going into production
      */
+    bid.sender = this.sender;
     await bid.save();
     return bid;
     
@@ -284,6 +288,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     /** For testing purposes the placed ask is immediatly saved
      * @todo Remove next 2 lines when going into production
      */
+    ask.sender = this.sender;
     await ask.save();
     return ask;
 
@@ -364,14 +369,14 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   public async sendReading(
     @Param(SmartMeterReading)
     reading: FlatConvectorModel<SmartMeterReading>,
-    @Param(yup.string())
-    participantId: string
+    // @Param(yup.string())
+    // participantId: string
     ){
     
     /** Get the participant which reading should be updated
-     * @todo replace 'participantId' by 'this.sender' once running in production
+     * @todo for unit testing this.sender has to be replaced with participantId from above
      */
-    const participant = await MarketParticipant.getOne(participantId);
+    const participant = await MarketParticipant.getOne(this.sender);
     participant.readings.push(reading);
     await participant.save();
     return participant;

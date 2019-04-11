@@ -1,6 +1,6 @@
 import { ConvectorModel, FlatConvectorModel } from '@worldsibu/convector-core-model';
 export declare enum ParticipantType {
-    prdoducer = "producer",
+    producer = "producer",
     consumer = "consumer",
     prosumer = "prosumer"
 }

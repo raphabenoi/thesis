@@ -5,7 +5,7 @@ var yup = require("yup");
 var convector_core_model_1 = require("@worldsibu/convector-core-model");
 var ParticipantType;
 (function (ParticipantType) {
-    ParticipantType["prdoducer"] = "producer";
+    ParticipantType["producer"] = "producer";
     ParticipantType["consumer"] = "consumer";
     ParticipantType["prosumer"] = "prosumer";
 })(ParticipantType = exports.ParticipantType || (exports.ParticipantType = {}));

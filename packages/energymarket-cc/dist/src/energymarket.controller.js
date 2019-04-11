@@ -19,7 +19,9 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, marketParticipant.save()];
+                    case 0:
+                        marketParticipant.id = this.sender;
+                        return [4, marketParticipant.save()];
                     case 1:
                         _a.sent();
                         return [2];
@@ -145,7 +147,9 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, bid.save()];
+                    case 0:
+                        bid.sender = this.sender;
+                        return [4, bid.save()];
                     case 1:
                         _a.sent();
                         return [2, bid];
@@ -197,7 +201,9 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, ask.save()];
+                    case 0:
+                        ask.sender = this.sender;
+                        return [4, ask.save()];
                     case 1:
                         _a.sent();
                         return [2, ask];
@@ -245,12 +251,12 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.sendReading = function (reading, participantId) {
+    EnergymarketController.prototype.sendReading = function (reading) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var participant;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(participantId)];
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(this.sender)];
                     case 1:
                         participant = _a.sent();
                         participant.readings.push(reading);
@@ -746,8 +752,7 @@ var EnergymarketController = (function (_super) {
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),
         convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(marketParticipant_model_1.SmartMeterReading)),
-        tslib_1.__param(1, convector_core_1.Param(yup.string()))
+        tslib_1.__param(0, convector_core_1.Param(marketParticipant_model_1.SmartMeterReading))
     ], EnergymarketController.prototype, "sendReading", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),

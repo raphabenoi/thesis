@@ -1,19 +1,48 @@
 #!/bin/bash
 #init
 cd ../../../
-lerna clean
-rm -rf node_modules
-rm package-lock.json
-npm i
-npm run env:restart
-npm run cc:start -- energymarket  1
+# lerna clean
+# rm -rf node_modules
+# rm package-lock.json
+# npm i
+# hurl new -o 4 -u 2
+npm run cc:start -- energymarket
 sleep 10
-conv-rest-api generate api -c energymarket -p hypenergy -f ./org1.energymarket.config.json
-npx lerna run compile --scope energymarket-app
-npx lerna run start --scope energymarket-app --stream
+#conv-rest-api generate api -c energymarket -p hypenergy
+#npx lerna run compile --scope energymarket-app
+#npx lerna run start --scope energymarket-app --stream
 
 # npm run cc:invoke -- energymarket org1 user1 energymarket createMarket '{"id":"MKT","auctionTime":900000,"gridBuyPrice":28,"gridSellPrice":13}'
 # npm run cc:invoke -- energymarket org1 user1 energymarket createAuction '{"id":"AUC1","start":1554113325000,"end":2554113325000}'
+# npm run cc:invoke -- energymarket org1 user1 energymarket createMarketParticipant '{"id":"PAR1", "name":"Anton", "is":"prosumer"}'
+
+hurl invoke energymarket energymarket_createMarket "{\"id\":\"MKT\",\"auctionTime\":900000,\"gridBuyPrice\":25,\"gridSellPrice\":5}" -o org1 -u admin
+hurl invoke energymarket energymarket_createGrid "{\"id\":\"GRID\",\"gridBuyPrice\":25,\"gridSellPrice\":5}" -o org1 -u admin
+
+hurl invoke energymarket energymarket_createMarketParticipant "{\"id\":\"PAR1\",\"name\":\"Anton\",\"is\":\"prosumer\"}" -o org1 -u user1
+hurl invoke energymarket energymarket_createMarketParticipant "{\"id\":\"PAR2\",\"name\":\"Berta\",\"is\":\"prosumer\"}" -o org2 -u user1
+hurl invoke energymarket energymarket_createMarketParticipant "{\"id\":\"PAR3\",\"name\":\"Chloe\",\"is\":\"prosumer\"}" -o org3 -u user1
+hurl invoke energymarket energymarket_createMarketParticipant "{\"id\":\"PAR4\",\"name\":\"Dieter\",\"is\":\"prosumer\"}" -o org4 -u user1
+
+hurl invoke energymarket energymarket_createAuction "{\"id\":\"AUC1\",\"start\":1554113325000,\"end\":1554123325000}" -o org1 -u admin
+hurl invoke energymarket energymarket_createAuction "{\"id\":\"AUC2\",\"start\":1554123325001,\"end\":1554133325000}" -o org1 -u admin
+hurl invoke energymarket energymarket_createAuction "{\"id\":\"AUC3\",\"start\":1554133325001,\"end\":1554143325000}" -o org1 -u admin
+
+hurl invoke energymarket energymarket_placeBid "{\"id\":\"BID1\",\"auctionId\":\"AUC1\",\"amount\":100,\"price\":15,\"sender\":\"PAR1\"}" -o org1 -u user1
+hurl invoke energymarket energymarket_placeAsk "{\"id\":\"ASK1\",\"auctionId\":\"AUC1\",\"amount\":110,\"price\":14,\"sender\":\"PAR2\"}" -o org2 -u user1
+hurl invoke energymarket energymarket_placeBid "{\"id\":\"BID2\",\"auctionId\":\"AUC1\",\"amount\":50,\"price\":10,\"sender\":\"PAR3\"}" -o org3 -u user1
+hurl invoke energymarket energymarket_placeAsk "{\"id\":\"ASK2\",\"auctionId\":\"AUC1\",\"amount\":60,\"price\":20,\"sender\":\"PAR4\"}" -o org4 -u user1
+
+hurl invoke energymarket energymarket_clearAuction "AUC1" -o org1 -u admin
+
+hurl invoke energymarket energymarket_sendReading "{\"id\":\"READ1\",\"auctionPeriod\":\"AUC1\",\"consumed\":105,\"produced\":0}" -o org1 -u user1
+hurl invoke energymarket energymarket_sendReading "{\"id\":\"READ2\",\"auctionPeriod\":\"AUC1\",\"consumed\":0,\"produced\":95}" -o org2 -u user1
+hurl invoke energymarket energymarket_sendReading "{\"id\":\"READ3\",\"auctionPeriod\":\"AUC1\",\"consumed\":10,\"produced\":0}" -o org3 -u user1
+hurl invoke energymarket energymarket_sendReading "{\"id\":\"READ4\",\"auctionPeriod\":\"AUC1\",\"consumed\":0,\"produced\":0}" -o org4 -u user1
+
+hurl invoke energymarket energymarket_getAllMarketParticipants -o org1 -u admin
+hurl invoke energymarket energymarket_escrowAuction "AUC1" -o org1 -u admin
+
 
 # npm run cc:invoke -- energymarket org1 user1 energymarket createSupplier '{"id":"SPL_2","name":"supplier2","rawMaterialAvailable":3000}'
 # npm run cc:invoke -- energymarket org1 user1 energymarket createManufacturer '{"id":"MNF_1","name":"manufacturer1","productsAvailable":0,"rawMaterialAvailable":0}'
