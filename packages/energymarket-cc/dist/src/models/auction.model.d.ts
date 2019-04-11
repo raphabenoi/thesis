@@ -1,9 +1,9 @@
 import { ConvectorModel } from '@worldsibu/convector-core-model';
 export declare enum AuctionStatus {
-    OPEN = 0,
-    CLOSED = 1,
-    CLEARED = 2,
-    ESCROWED = 3
+    open = "open",
+    closed = "closed",
+    cleared = "cleared",
+    escrowed = "escrowed"
 }
 export declare class Auction extends ConvectorModel<Auction> {
     readonly type = "de.rli.hypenergy.auction";

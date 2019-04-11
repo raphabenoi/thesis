@@ -13,7 +13,7 @@ import {
 
 /** Import all the model files */
 import { Ask } from './models/ask.model';
-import { Auction } from './models/auction.model';
+import { Auction, AuctionStatus } from './models/auction.model';
 import { Bid } from './models/bid.model';
 import { Market } from './models/market.model';
 import { Grid } from './models/grid.model';
@@ -192,8 +192,8 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     // /** Check if 'Auction' is still 'OPEN' for new bids */
     // if (txTimestamp >= auction.end) {
     //   /** If it is the first bid after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
-    //   if(auction.status === 0) {
-    //     auction.status = 1;
+    //   if(auction.status === "open") {
+    //     auction.status = AuctionStatus.closed;
     //     await auction.save();
     //   }
 
@@ -295,8 +295,8 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     // if (txTimestamp >= auction.end) {
 
     //   /** If it is the first ask after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
-    //   if(auction.status === 0) {
-    //     auction.status = 1;
+    //   if(auction.status === "open") {
+    //     auction.status = AuctionStatus.closed;
     //     await auction.save();
     //   }
 
@@ -472,7 +472,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
           /** Set i as the new market clearing price for this auction
            * @todo emit new event that MCP has been found */
           auction.mcp = i;
-          auction.status = 2;   /** Set AuctionStatus to 'CLEARED' */
+          auction.status = AuctionStatus.cleared;   /** Set AuctionStatus to 'CLEARED' */
 
           /** If demand != supply -> there is an amount that will not be satisfied at the given MCP */
           let maxMatchedAmount = Math.min(supplyCurve[i], demandCurve[i]);
@@ -544,7 +544,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
        * @remark MCP is not equal to gridBuyPrice since demand should pay gridBuyPrice while supply feeds in at gridSellPrice!
        */
       auction.mcp = -1;
-      auction.status = 2;   /** Set AuctionStatus to 'CLEARED' */
+      auction.status = AuctionStatus.cleared;   /** Set AuctionStatus to 'CLEARED' */
       auction.matchedAmount = 0;  /** No intersection has been found -> no match  */
       auction.unmatchedDemand = demandCurve[lowestPrice] - auction.matchedAmount;
       auction.unmatchedSupply = supplyCurve[highestPrice] - auction.matchedAmount;

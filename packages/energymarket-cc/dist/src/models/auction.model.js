@@ -5,10 +5,10 @@ var yup = require("yup");
 var convector_core_model_1 = require("@worldsibu/convector-core-model");
 var AuctionStatus;
 (function (AuctionStatus) {
-    AuctionStatus[AuctionStatus["OPEN"] = 0] = "OPEN";
-    AuctionStatus[AuctionStatus["CLOSED"] = 1] = "CLOSED";
-    AuctionStatus[AuctionStatus["CLEARED"] = 2] = "CLEARED";
-    AuctionStatus[AuctionStatus["ESCROWED"] = 3] = "ESCROWED";
+    AuctionStatus["open"] = "open";
+    AuctionStatus["closed"] = "closed";
+    AuctionStatus["cleared"] = "cleared";
+    AuctionStatus["escrowed"] = "escrowed";
 })(AuctionStatus = exports.AuctionStatus || (exports.AuctionStatus = {}));
 var Auction = (function (_super) {
     tslib_1.__extends(Auction, _super);
@@ -23,8 +23,8 @@ var Auction = (function (_super) {
     ], Auction.prototype, "type", void 0);
     tslib_1.__decorate([
         convector_core_model_1.Required(),
-        convector_core_model_1.Validate(yup.number()),
-        convector_core_model_1.Default(AuctionStatus.OPEN)
+        convector_core_model_1.Validate(yup.string().oneOf(Object.keys(AuctionStatus).map(function (k) { return AuctionStatus[k]; }))),
+        convector_core_model_1.Default(AuctionStatus.open)
     ], Auction.prototype, "status", void 0);
     tslib_1.__decorate([
         convector_core_model_1.ReadOnly(),

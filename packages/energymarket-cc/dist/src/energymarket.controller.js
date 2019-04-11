@@ -326,7 +326,7 @@ var EnergymarketController = (function (_super) {
                                             i--;
                                         }
                                         auction.mcp = i;
-                                        auction.status = 2;
+                                        auction.status = auction_model_1.AuctionStatus.cleared;
                                         maxMatchedAmount = Math.min(supplyCurve_1[i], demandCurve_1[i]);
                                         auction.matchedAmount = 0;
                                         if (!(supplyCurve_1[i] > demandCurve_1[i])) return [3, 15];
@@ -461,7 +461,7 @@ var EnergymarketController = (function (_super) {
                         return [3, 4];
                     case 7:
                         auction.mcp = -1;
-                        auction.status = 2;
+                        auction.status = auction_model_1.AuctionStatus.cleared;
                         auction.matchedAmount = 0;
                         auction.unmatchedDemand = demandCurve_1[lowestPrice] - auction.matchedAmount;
                         auction.unmatchedSupply = supplyCurve_1[highestPrice] - auction.matchedAmount;

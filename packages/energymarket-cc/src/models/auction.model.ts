@@ -8,10 +8,10 @@ import {
 } from '@worldsibu/convector-core-model';
 
 export enum AuctionStatus {
-  OPEN = 0,
-  CLOSED = 1,
-  CLEARED = 2,
-  ESCROWED = 3
+  open = 'open',
+  closed = 'closed',
+  cleared = 'cleared',
+  escrowed = 'escrowed'
 }
 
 export class Auction extends ConvectorModel<Auction> {
@@ -21,8 +21,8 @@ export class Auction extends ConvectorModel<Auction> {
 
   /** The status of the 'Auction' defaulting to 'OPEN = 0' */
   @Required()
-  @Validate(yup.number())
-  @Default(AuctionStatus.OPEN)
+  @Validate(yup.string().oneOf(Object.keys(AuctionStatus).map(k => AuctionStatus[k])))
+  @Default(AuctionStatus.open)
   public status: AuctionStatus;
 
   /** Start time as unix timestamp */

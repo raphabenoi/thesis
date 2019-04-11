@@ -11,7 +11,7 @@ import { defaultCipherList } from 'constants';
 import { ListenOptions } from 'net';
 
 export enum ParticipantType {
-  prdoducer = 'producer',
+  producer = 'producer',
   consumer = 'consumer',
   prosumer = 'prosumer'
 }
