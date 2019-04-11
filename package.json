@@ -20,6 +20,7 @@
     "cc:package": "f() { npm run lerna:build; chaincode-manager --update --config ./$2.$1.config.json --output ./chaincode-$1 package; }; f",
     "cc:install": "f() { hurl install $1 node -P ./chaincode-$1; }; f",
     "cc:install:debug": "f() { hurl install $1 node -P ./chaincode-$1 --debug; }; f",
+    "cc:invoke": "f() { chaincode-manager --config ./$2.$1.config.json --user $3 invoke $1 ${@:4}; }; f",
     "lerna:test": "lerna exec npm run test"
   },
   "devDependencies": {
