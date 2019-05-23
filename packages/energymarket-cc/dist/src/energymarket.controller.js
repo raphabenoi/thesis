@@ -19,9 +19,7 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        marketParticipant.id = this.sender;
-                        return [4, marketParticipant.save()];
+                    case 0: return [4, marketParticipant.save()];
                     case 1:
                         _a.sent();
                         return [2];
@@ -143,16 +141,31 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.placeBid = function (bid) {
+    EnergymarketController.prototype.placeBid = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var req, publicBid, privateBid;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        bid.sender = this.sender;
-                        return [4, bid.save()];
+                    case 0: return [4, this.tx.getTransientValue('bid', bid_model_1.FullBid)];
                     case 1:
+                        req = _a.sent();
+                        publicBid = new bid_model_1.Bid({
+                            id: req.id,
+                            auctionId: req.auctionId,
+                            sender: req.sender
+                        });
+                        return [4, publicBid.save()];
+                    case 2:
                         _a.sent();
-                        return [2, bid];
+                        privateBid = new bid_model_1.BidPrivateDetails({
+                            id: req.id,
+                            price: req.price,
+                            amount: req.amount
+                        });
+                        return [4, privateBid.save({ privateCollection: req.sender })];
+                    case 3:
+                        _a.sent();
+                        return [2, publicBid.toJSON()];
                 }
             });
         });
@@ -197,16 +210,31 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.placeAsk = function (ask) {
+    EnergymarketController.prototype.placeAsk = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var req, publicAsk, privateAsk;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        ask.sender = this.sender;
-                        return [4, ask.save()];
+                    case 0: return [4, this.tx.getTransientValue('ask', ask_model_1.FullAsk)];
                     case 1:
+                        req = _a.sent();
+                        publicAsk = new ask_model_1.Ask({
+                            id: req.id,
+                            auctionId: req.auctionId,
+                            sender: req.sender
+                        });
+                        return [4, publicAsk.save()];
+                    case 2:
                         _a.sent();
-                        return [2, ask];
+                        privateAsk = new ask_model_1.AskPrivateDetails({
+                            id: req.id,
+                            price: req.price,
+                            amount: req.amount
+                        });
+                        return [4, privateAsk.save({ privateCollection: req.sender })];
+                    case 3:
+                        _a.sent();
+                        return [2, publicAsk.toJSON()];
                 }
             });
         });
@@ -251,12 +279,12 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.sendReading = function (reading) {
+    EnergymarketController.prototype.sendReading = function (reading, participantId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var participant;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(this.sender)];
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(participantId)];
                     case 1:
                         participant = _a.sent();
                         participant.readings.push(reading);
@@ -270,17 +298,17 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.clearAuction = function (auctionId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var auction, txTimestamp, bids, asks, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_1, out_i_1, i, state_1;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var auction, txTimestamp, publicBids, bids, _i, publicBids_1, bid, bidPrivateDetails, mergedBid, publicAsks, asks, _a, publicAsks_1, ask, askPrivateDetails, mergedAsk, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_1, out_i_1, i, state_1;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0: return [4, auction_model_1.Auction.getOne(auctionId)];
                     case 1:
-                        auction = _a.sent();
+                        auction = _b.sent();
                         txTimestamp = (Date.now() + 30000000);
                         if (txTimestamp <= auction.end) {
                             throw new Error("Auction is still 'OPEN' and cannot be cleared yet. Try again once 'txTimestamp' > 'auction.end'");
                         }
-                        if (!(txTimestamp > auction.end)) return [3, 8];
+                        if (!(txTimestamp > auction.end)) return [3, 16];
                         return [4, bid_model_1.Bid.query(bid_model_1.Bid, {
                                 "selector": {
                                     "type": "de.rli.hypenergy.bid",
@@ -288,15 +316,62 @@ var EnergymarketController = (function (_super) {
                                 }
                             })];
                     case 2:
-                        bids = (_a.sent());
-                        return [4, ask_model_1.Ask.query(ask_model_1.Ask, {
-                                "selector": {
-                                    "type": "de.rli.hypenergy.ask",
-                                    "auctionId": auctionId
-                                }
-                            })];
+                        publicBids = (_b.sent());
+                        bids = new Array();
+                        _i = 0, publicBids_1 = publicBids;
+                        _b.label = 3;
                     case 3:
-                        asks = (_a.sent());
+                        if (!(_i < publicBids_1.length)) return [3, 6];
+                        bid = publicBids_1[_i];
+                        return [4, bid_model_1.BidPrivateDetails.getOne(bid.id, bid_model_1.BidPrivateDetails, {
+                                privateCollection: bid.sender
+                            })];
+                    case 4:
+                        bidPrivateDetails = _b.sent();
+                        mergedBid = new bid_model_1.FullBid({
+                            id: bid.id,
+                            auctionId: bid.auctionId,
+                            sender: bid.sender,
+                            amount: bidPrivateDetails.amount,
+                            price: bidPrivateDetails.price
+                        });
+                        bids.push(mergedBid);
+                        _b.label = 5;
+                    case 5:
+                        _i++;
+                        return [3, 3];
+                    case 6: return [4, ask_model_1.Ask.query(ask_model_1.Ask, {
+                            "selector": {
+                                "type": "de.rli.hypenergy.ask",
+                                "auctionId": auctionId
+                            }
+                        })];
+                    case 7:
+                        publicAsks = (_b.sent());
+                        asks = new Array();
+                        _a = 0, publicAsks_1 = publicAsks;
+                        _b.label = 8;
+                    case 8:
+                        if (!(_a < publicAsks_1.length)) return [3, 11];
+                        ask = publicAsks_1[_a];
+                        return [4, ask_model_1.AskPrivateDetails.getOne(ask.id, ask_model_1.AskPrivateDetails, {
+                                privateCollection: ask.sender
+                            })];
+                    case 9:
+                        askPrivateDetails = _b.sent();
+                        mergedAsk = new ask_model_1.FullAsk({
+                            id: ask.id,
+                            auctionId: ask.auctionId,
+                            sender: ask.sender,
+                            amount: askPrivateDetails.amount,
+                            price: askPrivateDetails.price
+                        });
+                        asks.push(mergedAsk);
+                        _b.label = 10;
+                    case 10:
+                        _a++;
+                        return [3, 8];
+                    case 11:
                         lowestPrice = bids.concat(asks).reduce(function (acc, element) {
                             if (element.price < acc) {
                                 acc = element.price;
@@ -320,11 +395,11 @@ var EnergymarketController = (function (_super) {
                             _highestPrice--;
                         }
                         _loop_1 = function (i) {
-                            var maxMatchedAmount, _i, _a, bid, _b, _c, ask, _d, _e, ask, _f, _g, ask, _h, _j, bid, _k, _l, bid;
+                            var maxMatchedAmount, _loop_2, _i, _a, bid, _loop_3, _b, _c, ask, _loop_4, _d, _e, ask, state_2, _loop_5, _f, _g, ask, _loop_6, _h, _j, bid, _loop_7, _k, _l, bid, state_3;
                             return tslib_1.__generator(this, function (_m) {
                                 switch (_m.label) {
                                     case 0:
-                                        if (!(supplyCurve_1[i] >= demandCurve_1[i] && supplyCurve_1[i] != 0)) return [3, 30];
+                                        if (!(supplyCurve_1[i] >= demandCurve_1[i] && supplyCurve_1[i] != 0)) return [3, 26];
                                         if (supplyCurve_1[i - 1] === 0 && demandCurve_1[i] === 0) {
                                             return [2, (out_i_1 = i, "break")];
                                         }
@@ -335,13 +410,23 @@ var EnergymarketController = (function (_super) {
                                         auction.status = auction_model_1.AuctionStatus.cleared;
                                         maxMatchedAmount = Math.min(supplyCurve_1[i], demandCurve_1[i]);
                                         auction.matchedAmount = 0;
-                                        if (!(supplyCurve_1[i] > demandCurve_1[i])) return [3, 15];
+                                        if (!(supplyCurve_1[i] > demandCurve_1[i])) return [3, 13];
+                                        _loop_2 = function (bid) {
+                                            return tslib_1.__generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4, publicBids.find(function (publicBid) { return publicBid.id == bid.id; }).update({ successful: true })];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [2];
+                                                }
+                                            });
+                                        };
                                         _i = 0, _a = bids.filter(function (bid) { return bid.price >= i; });
                                         _m.label = 1;
                                     case 1:
                                         if (!(_i < _a.length)) return [3, 4];
                                         bid = _a[_i];
-                                        return [4, bid.update({ successful: true })];
+                                        return [5, _loop_2(bid)];
                                     case 2:
                                         _m.sent();
                                         _m.label = 3;
@@ -349,14 +434,25 @@ var EnergymarketController = (function (_super) {
                                         _i++;
                                         return [3, 1];
                                     case 4:
+                                        _loop_3 = function (ask) {
+                                            return tslib_1.__generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        maxMatchedAmount -= ask.amount;
+                                                        auction.matchedAmount += ask.amount;
+                                                        return [4, publicAsks.find(function (publicAsk) { return publicAsk.id == ask.id; }).update({ successful: true })];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [2];
+                                                }
+                                            });
+                                        };
                                         _b = 0, _c = asks.filter(function (ask) { return ask.price < i; });
                                         _m.label = 5;
                                     case 5:
                                         if (!(_b < _c.length)) return [3, 8];
                                         ask = _c[_b];
-                                        maxMatchedAmount -= ask.amount;
-                                        auction.matchedAmount += ask.amount;
-                                        return [4, ask.update({ successful: true })];
+                                        return [5, _loop_3(ask)];
                                     case 6:
                                         _m.sent();
                                         _m.label = 7;
@@ -364,108 +460,177 @@ var EnergymarketController = (function (_super) {
                                         _b++;
                                         return [3, 5];
                                     case 8:
+                                        _loop_4 = function (ask) {
+                                            var privateAsk;
+                                            return tslib_1.__generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        if (!((maxMatchedAmount - ask.amount) >= 0)) return [3, 2];
+                                                        maxMatchedAmount -= ask.amount;
+                                                        auction.matchedAmount += ask.amount;
+                                                        return [4, publicAsks.find(function (publicAsk) { return publicAsk.id == ask.id; }).update({ successful: true })];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [3, 5];
+                                                    case 2:
+                                                        ask.unmatchedAmount = ask.amount - maxMatchedAmount;
+                                                        auction.matchedAmount += maxMatchedAmount;
+                                                        return [4, publicAsks.find(function (publicAsk) { return publicAsk.id == ask.id; }).update({ successful: true })];
+                                                    case 3:
+                                                        _a.sent();
+                                                        privateAsk = new ask_model_1.AskPrivateDetails({
+                                                            id: ask.id,
+                                                            price: ask.price,
+                                                            amount: ask.amount,
+                                                            unmatchedAmount: ask.unmatchedAmount
+                                                        });
+                                                        return [4, privateAsk.save({ privateCollection: ask.sender })];
+                                                    case 4:
+                                                        _a.sent();
+                                                        return [2, "break"];
+                                                    case 5: return [2];
+                                                }
+                                            });
+                                        };
                                         _d = 0, _e = asks.filter(function (ask) { return ask.price == i; });
                                         _m.label = 9;
                                     case 9:
-                                        if (!(_d < _e.length)) return [3, 14];
+                                        if (!(_d < _e.length)) return [3, 12];
                                         ask = _e[_d];
-                                        if (!((maxMatchedAmount - ask.amount) >= 0)) return [3, 11];
-                                        maxMatchedAmount -= ask.amount;
-                                        auction.matchedAmount += ask.amount;
-                                        return [4, ask.update({ successful: true })];
+                                        return [5, _loop_4(ask)];
                                     case 10:
-                                        _m.sent();
-                                        return [3, 13];
+                                        state_2 = _m.sent();
+                                        if (state_2 === "break")
+                                            return [3, 12];
+                                        _m.label = 11;
                                     case 11:
-                                        ask.unmatchedAmount = ask.amount - maxMatchedAmount;
-                                        auction.matchedAmount += maxMatchedAmount;
-                                        return [4, ask.update({ successful: true })];
-                                    case 12:
-                                        _m.sent();
-                                        return [3, 14];
-                                    case 13:
                                         _d++;
                                         return [3, 9];
-                                    case 14: return [3, 29];
-                                    case 15:
+                                    case 12: return [3, 25];
+                                    case 13:
+                                        _loop_5 = function (ask) {
+                                            return tslib_1.__generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4, publicAsks.find(function (publicAsk) { return publicAsk.id == ask.id; }).update({ successful: true })];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [2];
+                                                }
+                                            });
+                                        };
                                         _f = 0, _g = asks.filter(function (ask) { return ask.price <= i; });
+                                        _m.label = 14;
+                                    case 14:
+                                        if (!(_f < _g.length)) return [3, 17];
+                                        ask = _g[_f];
+                                        return [5, _loop_5(ask)];
+                                    case 15:
+                                        _m.sent();
                                         _m.label = 16;
                                     case 16:
-                                        if (!(_f < _g.length)) return [3, 19];
-                                        ask = _g[_f];
-                                        return [4, ask.update({ successful: true })];
+                                        _f++;
+                                        return [3, 14];
                                     case 17:
-                                        _m.sent();
+                                        _loop_6 = function (bid) {
+                                            return tslib_1.__generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        maxMatchedAmount -= bid.amount;
+                                                        auction.matchedAmount += bid.amount;
+                                                        return [4, publicBids.find(function (publicBid) { return publicBid.id == bid.id; }).update({ successful: true })];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [2];
+                                                }
+                                            });
+                                        };
+                                        _h = 0, _j = bids.filter(function (bid) { return bid.price > i; });
                                         _m.label = 18;
                                     case 18:
-                                        _f++;
-                                        return [3, 16];
+                                        if (!(_h < _j.length)) return [3, 21];
+                                        bid = _j[_h];
+                                        return [5, _loop_6(bid)];
                                     case 19:
-                                        _h = 0, _j = bids.filter(function (bid) { return bid.price > i; });
+                                        _m.sent();
                                         _m.label = 20;
                                     case 20:
-                                        if (!(_h < _j.length)) return [3, 23];
-                                        bid = _j[_h];
-                                        maxMatchedAmount -= bid.amount;
-                                        auction.matchedAmount += bid.amount;
-                                        return [4, bid.update({ successful: true })];
+                                        _h++;
+                                        return [3, 18];
                                     case 21:
-                                        _m.sent();
+                                        _loop_7 = function (bid) {
+                                            var privateBid;
+                                            return tslib_1.__generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        if (!((maxMatchedAmount - bid.amount) >= 0)) return [3, 2];
+                                                        maxMatchedAmount -= bid.amount;
+                                                        auction.matchedAmount += bid.amount;
+                                                        return [4, publicBids.find(function (publicBid) { return publicBid.id == bid.id; }).update({ successful: true })];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [3, 5];
+                                                    case 2:
+                                                        bid.unmatchedAmount = bid.amount - maxMatchedAmount;
+                                                        auction.matchedAmount += maxMatchedAmount;
+                                                        return [4, publicBids.find(function (publicBid) { return publicBid.id == bid.id; }).update({ successful: true })];
+                                                    case 3:
+                                                        _a.sent();
+                                                        privateBid = new bid_model_1.BidPrivateDetails({
+                                                            id: bid.id,
+                                                            price: bid.price,
+                                                            amount: bid.amount,
+                                                            unmatchedAmount: bid.unmatchedAmount
+                                                        });
+                                                        return [4, privateBid.save({ privateCollection: bid.sender })];
+                                                    case 4:
+                                                        _a.sent();
+                                                        return [2, "break"];
+                                                    case 5: return [2];
+                                                }
+                                            });
+                                        };
+                                        _k = 0, _l = bids.filter(function (bid) { return bid.price == i; });
                                         _m.label = 22;
                                     case 22:
-                                        _h++;
-                                        return [3, 20];
+                                        if (!(_k < _l.length)) return [3, 25];
+                                        bid = _l[_k];
+                                        return [5, _loop_7(bid)];
                                     case 23:
-                                        _k = 0, _l = bids.filter(function (bid) { return bid.price == i; });
+                                        state_3 = _m.sent();
+                                        if (state_3 === "break")
+                                            return [3, 25];
                                         _m.label = 24;
                                     case 24:
-                                        if (!(_k < _l.length)) return [3, 29];
-                                        bid = _l[_k];
-                                        if (!((maxMatchedAmount - bid.amount) >= 0)) return [3, 26];
-                                        maxMatchedAmount -= bid.amount;
-                                        auction.matchedAmount += bid.amount;
-                                        return [4, bid.update({ successful: true })];
-                                    case 25:
-                                        _m.sent();
-                                        return [3, 28];
-                                    case 26:
-                                        bid.unmatchedAmount = bid.amount - maxMatchedAmount;
-                                        auction.matchedAmount += maxMatchedAmount;
-                                        return [4, bid.update({ successful: true })];
-                                    case 27:
-                                        _m.sent();
-                                        return [3, 29];
-                                    case 28:
                                         _k++;
-                                        return [3, 24];
-                                    case 29:
+                                        return [3, 22];
+                                    case 25:
                                         auction.unmatchedDemand = demandCurve_1[lowestPrice] - auction.matchedAmount;
                                         auction.unmatchedSupply = supplyCurve_1[highestPrice] - auction.matchedAmount;
                                         auction.save();
                                         return [2, { value: auction }];
-                                    case 30:
+                                    case 26:
                                         out_i_1 = i;
                                         return [2];
                                 }
                             });
                         };
                         i = lowestPrice;
-                        _a.label = 4;
-                    case 4:
-                        if (!(i <= highestPrice)) return [3, 7];
+                        _b.label = 12;
+                    case 12:
+                        if (!(i <= highestPrice)) return [3, 15];
                         return [5, _loop_1(i)];
-                    case 5:
-                        state_1 = _a.sent();
+                    case 13:
+                        state_1 = _b.sent();
                         i = out_i_1;
                         if (typeof state_1 === "object")
                             return [2, state_1.value];
                         if (state_1 === "break")
-                            return [3, 7];
-                        _a.label = 6;
-                    case 6:
+                            return [3, 15];
+                        _b.label = 14;
+                    case 14:
                         i++;
-                        return [3, 4];
-                    case 7:
+                        return [3, 12];
+                    case 15:
                         auction.mcp = -1;
                         auction.status = auction_model_1.AuctionStatus.cleared;
                         auction.matchedAmount = 0;
@@ -473,28 +638,28 @@ var EnergymarketController = (function (_super) {
                         auction.unmatchedSupply = supplyCurve_1[highestPrice] - auction.matchedAmount;
                         auction.save();
                         return [2, auction];
-                    case 8: return [2];
+                    case 16: return [2];
                 }
             });
         });
     };
     EnergymarketController.prototype.escrowAuction = function (auctionId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var auction, grid, market, participants, successfulBids, successfulAsks, _loop_2, _i, participants_1, participant;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var auction, grid, market, participants, publicBids, successfulBids, _i, publicBids_2, bid, bidPrivateDetails, mergedBid, publicAsks, successfulAsks, _a, publicAsks_2, ask, askPrivateDetails, mergedAsk, _loop_8, _b, participants_1, participant;
+            return tslib_1.__generator(this, function (_c) {
+                switch (_c.label) {
                     case 0: return [4, auction_model_1.Auction.getOne(auctionId)];
                     case 1:
-                        auction = _a.sent();
+                        auction = _c.sent();
                         return [4, grid_model_1.Grid.getOne('GRID')];
                     case 2:
-                        grid = _a.sent();
+                        grid = _c.sent();
                         return [4, market_model_1.Market.getOne('MKT')];
                     case 3:
-                        market = _a.sent();
+                        market = _c.sent();
                         return [4, marketParticipant_model_1.MarketParticipant.getAll()];
                     case 4:
-                        participants = _a.sent();
+                        participants = _c.sent();
                         return [4, bid_model_1.Bid.query(bid_model_1.Bid, {
                                 "selector": {
                                     "type": "de.rli.hypenergy.bid",
@@ -503,17 +668,64 @@ var EnergymarketController = (function (_super) {
                                 }
                             })];
                     case 5:
-                        successfulBids = (_a.sent());
-                        return [4, ask_model_1.Ask.query(ask_model_1.Ask, {
-                                "selector": {
-                                    "type": "de.rli.hypenergy.ask",
-                                    "auctionId": auctionId,
-                                    "successful": true
-                                }
-                            })];
+                        publicBids = (_c.sent());
+                        successfulBids = new Array();
+                        _i = 0, publicBids_2 = publicBids;
+                        _c.label = 6;
                     case 6:
-                        successfulAsks = (_a.sent());
-                        _loop_2 = function (participant) {
+                        if (!(_i < publicBids_2.length)) return [3, 9];
+                        bid = publicBids_2[_i];
+                        return [4, bid_model_1.BidPrivateDetails.getOne(bid.id, bid_model_1.BidPrivateDetails, {
+                                privateCollection: bid.sender
+                            })];
+                    case 7:
+                        bidPrivateDetails = _c.sent();
+                        mergedBid = new bid_model_1.FullBid({
+                            id: bid.id,
+                            auctionId: bid.auctionId,
+                            sender: bid.sender,
+                            amount: bidPrivateDetails.amount,
+                            price: bidPrivateDetails.price
+                        });
+                        successfulBids.push(mergedBid);
+                        _c.label = 8;
+                    case 8:
+                        _i++;
+                        return [3, 6];
+                    case 9: return [4, ask_model_1.Ask.query(ask_model_1.Ask, {
+                            "selector": {
+                                "type": "de.rli.hypenergy.ask",
+                                "auctionId": auctionId,
+                                "successful": true
+                            }
+                        })];
+                    case 10:
+                        publicAsks = (_c.sent());
+                        successfulAsks = new Array();
+                        _a = 0, publicAsks_2 = publicAsks;
+                        _c.label = 11;
+                    case 11:
+                        if (!(_a < publicAsks_2.length)) return [3, 14];
+                        ask = publicAsks_2[_a];
+                        return [4, ask_model_1.AskPrivateDetails.getOne(ask.id, ask_model_1.AskPrivateDetails, {
+                                privateCollection: ask.sender
+                            })];
+                    case 12:
+                        askPrivateDetails = _c.sent();
+                        mergedAsk = new ask_model_1.FullAsk({
+                            id: ask.id,
+                            auctionId: ask.auctionId,
+                            sender: ask.sender,
+                            amount: askPrivateDetails.amount,
+                            price: askPrivateDetails.price
+                        });
+                        successfulAsks.push(mergedAsk);
+                        _c.label = 13;
+                    case 13:
+                        _a++;
+                        return [3, 11];
+                    case 14:
+                        _loop_8 = function (participant) {
                             var consumption = participant.readings.find(function (reading) { return reading.auctionPeriod == auction.id; }).consumed;
                             var production = participant.readings.find(function (reading) { return reading.auctionPeriod == auction.id; }).produced;
                             var bidAmount = successfulBids.filter(function (bid) { return bid.sender == participant.id; }).reduce(function (acc, bid) {
@@ -569,9 +781,9 @@ var EnergymarketController = (function (_super) {
                                 }
                             }
                         };
-                        for (_i = 0, participants_1 = participants; _i < participants_1.length; _i++) {
-                            participant = participants_1[_i];
-                            _loop_2(participant);
+                        for (_b = 0, participants_1 = participants; _b < participants_1.length; _b++) {
+                            participant = participants_1[_b];
+                            _loop_8(participant);
                         }
                         if (market.energyBalance < 0) {
                             grid.coinBalance += (-market.energyBalance) * market.gridBuyPrice;
@@ -589,11 +801,11 @@ var EnergymarketController = (function (_super) {
                         }
                         Promise.all(participants.map(function (participant) { return participant.save(); }));
                         return [4, market.save()];
-                    case 7:
-                        _a.sent();
+                    case 15:
+                        _c.sent();
                         return [4, grid.save()];
-                    case 8:
-                        _a.sent();
+                    case 16:
+                        _c.sent();
                         return [2, {
                                 participants: participants,
                                 market: market,
@@ -713,8 +925,7 @@ var EnergymarketController = (function (_super) {
     ], EnergymarketController.prototype, "getAllGrids", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Create('Bid'),
-        convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(bid_model_1.Bid))
+        convector_core_1.Invokable()
     ], EnergymarketController.prototype, "placeBid", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.GetAll('Bid'),
@@ -732,8 +943,7 @@ var EnergymarketController = (function (_super) {
     ], EnergymarketController.prototype, "getBidsByAuctionId", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Create('Ask'),
-        convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(ask_model_1.Ask))
+        convector_core_1.Invokable()
     ], EnergymarketController.prototype, "placeAsk", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.GetAll('Ask'),
@@ -752,7 +962,8 @@ var EnergymarketController = (function (_super) {
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),
         convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(marketParticipant_model_1.SmartMeterReading))
+        tslib_1.__param(0, convector_core_1.Param(marketParticipant_model_1.SmartMeterReading)),
+        tslib_1.__param(1, convector_core_1.Param(yup.string()))
     ], EnergymarketController.prototype, "sendReading", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),

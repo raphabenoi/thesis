@@ -7,9 +7,9 @@ import { ClientFactory, ConvectorControllerClient, FlatConvectorModel } from '@w
 import 'mocha';
 
 import { EnergymarketController } from '../src';
-import { Ask } from '../src/models/ask.model';
+import { Ask, AskPrivateDetails, FullAsk } from '../src/models/ask.model';
 import { Auction } from '../src/models/auction.model';
-import { Bid } from '../src/models/bid.model';
+import { Bid, BidPrivateDetails, FullBid } from '../src/models/bid.model';
 import { Market } from '../src/models/market.model';
 import { Grid } from '../src/models/grid.model';
 import { MarketParticipant, ParticipantType, SmartMeterReading } from '../src/models/marketParticipant.model';
@@ -243,8 +243,8 @@ describe('Energymarket', () => {
     let participants = new Array<MarketParticipant>(numberOfParticipants);
     for (let i=0; i<numberOfParticipants; i++) {
       participants[i] = new MarketParticipant({
-        id: "PAR" + i,
-        name: "Anton" + i,
+        id: "PAR" + (i+2),
+        name: "Anton" + (i+2),
         is: ParticipantType.prosumer,
         coinBalance: 0,
         energyBalance: 0
@@ -252,6 +252,10 @@ describe('Energymarket', () => {
     }
     for (const participant of participants) { await energymarketCtrl.createMarketParticipant(participant) };
     
+    let committedParticipants = await energymarketCtrl.getAllMarketParticipants().then(participant => participant.map(participant => new MarketParticipant(participant)));
+    console.log(committedParticipants);
+
+
     // const participant = new MarketParticipant({
     //   id: "PAR1",
     //   name: "Anton",
@@ -271,9 +275,9 @@ describe('Energymarket', () => {
     // await energymarketCtrl.createMarketParticipant(participant2).catch(ex => ex.responses[0].error.message);
 
     let numberOfBids = 30;
-    let bids = new Array<Bid>(numberOfBids);
+    let bids = new Array<FullBid>(numberOfBids);
     for (let i=0; i<numberOfBids; i++) {
-      bids[i] = new Bid({ 
+      bids[i] = new FullBid({ 
         id: uuid(), 
         auctionId: auction.id, 
         amount: Math.floor(Math.random() * 100) + 1, 
@@ -281,7 +285,14 @@ describe('Energymarket', () => {
         sender: participants[Math.floor(Math.random() * 10)].id
       });
     }
-    for (const bid of bids) { await energymarketCtrl.placeBid(bid)};
+    for (const bid of bids) { 
+      await energymarketCtrl
+        .$config({transient: { bid: bid.toJSON() }})
+        .placeBid();
+    };
+
+    
+
     // await Promise.all(bids.map(bid => energymarketCtrl.placeBid(bid)));
     // let savedBids = await energymarketCtrl.getAllBids().then(bids => bids.map(bid => new Bid(bid)));
     
@@ -296,9 +307,9 @@ describe('Energymarket', () => {
     
   
     let numberOfAsks = 30;
-    let asks = new Array<Ask>(numberOfAsks)
+    let asks = new Array<FullAsk>(numberOfAsks)
     for (let i=0; i<numberOfAsks; i++) {
-      asks[i] = new Ask({ 
+      asks[i] = new FullAsk({ 
         id: uuid(), 
         auctionId: auction.id, 
         amount: Math.floor(Math.random() * 100) + 1, 
@@ -306,7 +317,15 @@ describe('Energymarket', () => {
         sender: participants[Math.floor(Math.random() * 9)].id
       });
     }
-    for (const ask of asks) { await energymarketCtrl.placeAsk(ask)};
+    for (const ask of asks) { 
+      await energymarketCtrl
+        .$config({transient: { ask: ask.toJSON() }})
+        .placeAsk();
+    };
+
+    let placedBids = await energymarketCtrl.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
+    let placedAsks = await energymarketCtrl.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
+   
     // let savedAsks = await energymarketCtrl.getAllAsks().then(asks => asks.map(ask => new Ask(ask)));
 
     // const ask = new Ask({
@@ -327,11 +346,43 @@ describe('Energymarket', () => {
     successfulAsks = successfulAsks.filter(ask => ask.successful == true);
     let savedParticipants = await energymarketCtrl.getAllMarketParticipants().then(participant => participant.map(participant => new MarketParticipant(participant)));
 
+    let fullSuccessfulBids = new Array<FullBid>();
+    for(const successfulBid of successfulBids) {
+      const bidPrivateRaw = await adapter.stub.getPrivateData(successfulBid.sender, successfulBid.id);
+      const bidPrivate = new BidPrivateDetails(JSON.parse(bidPrivateRaw.toString('utf8')));
+      let bidMerged = new FullBid({
+        id: successfulBid.id,
+        auctionId: successfulBid.auctionId,
+        sender: successfulBid.sender,
+        successful: successfulBid.successful,
+        unmatchedAmount: bidPrivate.unmatchedAmount,
+        amount: bidPrivate.amount,
+        price: bidPrivate.price
+      })
+      fullSuccessfulBids.push(bidMerged);
+    }
+
+    let fullSuccessfulAsks = new Array<FullAsk>();
+    for(const successfulAsk of successfulAsks) {
+      const askPrivateRaw = await adapter.stub.getPrivateData(successfulAsk.sender, successfulAsk.id);
+      const askPrivate = new AskPrivateDetails(JSON.parse(askPrivateRaw.toString('utf8')));
+      let askMerged = new FullAsk({
+        id: successfulAsk.id,
+        auctionId: successfulAsk.auctionId,
+        sender: successfulAsk.sender,
+        successful: successfulAsk.successful,
+        unmatchedAmount: askPrivate.unmatchedAmount,
+        amount: askPrivate.amount,
+        price: askPrivate.price
+      })
+      fullSuccessfulAsks.push(askMerged);
+    }
+    
     let numberOfReadings = 10;
     let readings = new Array<SmartMeterReading>(numberOfReadings);
     for (let i=0; i<numberOfReadings; i++) {
-      let bidAmount = successfulBids.filter(bid => bid.sender == "PAR" + i).reduce((acc,bid) => acc + bid.amount, 0);
-      let askAmount = successfulAsks.filter(ask => ask.sender == "PAR" + i).reduce((acc,ask) => acc + ask.amount, 0);
+      let bidAmount = fullSuccessfulBids.filter(bid => bid.sender == "PAR" + (i+2)).reduce((acc,bid) => acc + bid.amount, 0);
+      let askAmount = fullSuccessfulAsks.filter(ask => ask.sender == "PAR" + (i+2)).reduce((acc,ask) => acc + ask.amount, 0);
       readings[i] = new SmartMeterReading({
         id: auction.id,
         auctionPeriod: auction.id,
@@ -385,6 +436,46 @@ describe('Energymarket', () => {
     // }
     // console.log(`Bid or Ask on the edge is ${edge} and a MCP of ${savedAuction.mcp}`);
 
+    successfulBids = await energymarketCtrl.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
+    successfulBids = successfulBids.filter(bid => bid.successful == true);
+    successfulAsks = await energymarketCtrl.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
+    successfulAsks = successfulAsks.filter(ask => ask.successful == true);
+    savedParticipants = await energymarketCtrl.getAllMarketParticipants().then(participant => participant.map(participant => new MarketParticipant(participant)));
+
+    fullSuccessfulBids = new Array<FullBid>();
+    for(const successfulBid of successfulBids) {
+      const bidPrivateRaw = await adapter.stub.getPrivateData(successfulBid.sender, successfulBid.id);
+      const bidPrivate = new BidPrivateDetails(JSON.parse(bidPrivateRaw.toString('utf8')));
+      let bidMerged = new FullBid({
+        id: successfulBid.id,
+        auctionId: successfulBid.auctionId,
+        sender: successfulBid.sender,
+        successful: successfulBid.successful,
+        unmatchedAmount: bidPrivate.unmatchedAmount,
+        amount: bidPrivate.amount,
+        price: bidPrivate.price
+      })
+      fullSuccessfulBids.push(bidMerged);
+    }
+
+    fullSuccessfulAsks = new Array<FullAsk>();
+    for(const successfulAsk of successfulAsks) {
+      const askPrivateRaw = await adapter.stub.getPrivateData(successfulAsk.sender, successfulAsk.id);
+      const askPrivate = new AskPrivateDetails(JSON.parse(askPrivateRaw.toString('utf8')));
+      let askMerged = new FullAsk({
+        id: successfulAsk.id,
+        auctionId: successfulAsk.auctionId,
+        sender: successfulAsk.sender,
+        successful: successfulAsk.successful,
+        unmatchedAmount: askPrivate.unmatchedAmount,
+        amount: askPrivate.amount,
+        price: askPrivate.price
+      })
+      fullSuccessfulAsks.push(askMerged);
+    }
+
+
+    debugger;
     
     // expect(edge).to.be.eql(savedAuction.mcp);
     expect(savedAuction.mcp).to.exist;
@@ -406,6 +497,56 @@ describe('Energymarket', () => {
     // expect(savedGrid.energyBalance).to.be.eql(0);
     // expect(savedParticipants[0].coinBalance).to.be.eql(-450);
     // expect(savedParticipants[1].coinBalance).to.be.eql(250);
+  });
+
+
+  it('should test the private bid placement', async () => {
+
+    const bidTransientInput = new FullBid({
+      id: "BID1",
+      auctionId: "AUC1",
+      sender: "A",
+      amount: 10,
+      price: 20
+    })
+
+    await energymarketCtrl
+      .$config({transient: { bid: bidTransientInput.toJSON() }})
+      .placeBid();
+
+
+    const askTransientInput = new FullAsk({
+      id: "ASK1",
+      auctionId: "AUC1",
+      sender: "B",
+      amount: 15,
+      price: 10
+    })
+
+    await energymarketCtrl
+    .$config({transient: { ask: askTransientInput.toJSON() }})
+    .placeAsk();
+
+
+    const bid = await adapter.getById<Bid>(bidTransientInput.id);
+    const bidPrivateRaw = await adapter.stub.getPrivateData('A', bidTransientInput.id);
+    const bidPrivate = new BidPrivateDetails(JSON.parse(bidPrivateRaw.toString('utf8')));
+
+    const ask = await adapter.getById<Ask>(askTransientInput.id);
+    const askPrivateRaw = await adapter.stub.getPrivateData('B', askTransientInput.id);
+    const askPrivate = new AskPrivateDetails(JSON.parse(askPrivateRaw.toString('utf8')));
+
+    expect(bid.id).to.eql('BID1');
+    expect(bidPrivate.id).to.eql('BID1');
+    expect(bidPrivate.amount).to.eql(10);
+    expect(bidPrivate.price).to.eql(20);
+    
+
+    expect(ask.id).to.eql('ASK1');
+    expect(askPrivate.id).to.eql('ASK1');
+    expect(askPrivate.amount).to.eql(15);
+    expect(askPrivate.price).to.eql(10);
+   
   });
 
 

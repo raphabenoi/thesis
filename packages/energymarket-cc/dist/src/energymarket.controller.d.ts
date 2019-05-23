@@ -17,15 +17,15 @@ export declare class EnergymarketController extends ConvectorController<Chaincod
     getAllMarkets(): Promise<Market[]>;
     createGrid(grid: Grid): Promise<void>;
     getAllGrids(): Promise<Grid[]>;
-    placeBid(bid: Bid): Promise<Bid>;
+    placeBid(): Promise<any>;
     getAllBids(): Promise<Bid[]>;
     getBidById(bidId: string): Promise<Bid>;
     getBidsByAuctionId(auctionId: string): Promise<Bid[]>;
-    placeAsk(ask: Ask): Promise<Ask>;
+    placeAsk(): Promise<any>;
     getAllAsks(): Promise<Ask[]>;
     getAskById(askId: string): Promise<Ask>;
     getAsksByAuctionId(auctionId: string): Promise<Ask[]>;
-    sendReading(reading: FlatConvectorModel<SmartMeterReading>): Promise<MarketParticipant>;
+    sendReading(reading: FlatConvectorModel<SmartMeterReading>, participantId: string): Promise<MarketParticipant>;
     clearAuction(auctionId: string): Promise<Auction>;
     escrowAuction(auctionId: string): Promise<{
         participants: MarketParticipant[];

@@ -12,9 +12,9 @@ import {
 } from '@worldsibu/convector-core';
 
 /** Import all the model files */
-import { Ask } from './models/ask.model';
+import { Ask, FullAsk, AskPrivateDetails } from './models/ask.model';
 import { Auction, AuctionStatus } from './models/auction.model';
-import { Bid } from './models/bid.model';
+import { Bid, FullBid, BidPrivateDetails } from './models/bid.model';
 import { Market } from './models/market.model';
 import { Grid } from './models/grid.model';
 import { MarketParticipant, SmartMeterReading } from './models/marketParticipant.model';
@@ -42,7 +42,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     marketParticipant: MarketParticipant
   ) {
     /** @todo remove next line. It is only for testing purposes */
-    marketParticipant.id = this.sender;
+    //marketParticipant.id = this.sender;
     
     /** Saves the new 'MarketParticipant' to state */
     await marketParticipant.save();
@@ -177,17 +177,42 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   /** Transaction that places a new bid */
   @Create('Bid')
   @Invokable()
-  public async placeBid(
-    @Param(Bid)
-    bid: Bid
-    ) {
+  public async placeBid():Promise<any> {
     
+    /** Retrieve the data from transaction that was sent in the transient field */
+    const req = await this.tx.getTransientValue<FullBid>('bid', FullBid);
+
+    /** Create new Bid with the information that should be publicly visible */
+    const publicBid = new Bid({
+      id: req.id,
+      auctionId: req.auctionId,
+      /** @todo switch the 2 lines below, so that the bid's sender is automatically determined by the chaincode */
+      sender: req.sender 
+      //sender: this.sender
+    });
+
+    /** Save new bid to the public state */
+    await publicBid.save();
+
+    /** Create new model which stores the bid's private details */
+    const privateBid = new BidPrivateDetails({
+      id: req.id,
+      price: req.price,
+      amount: req.amount
+    });
+
+    /** Store the private bid details in the according private data collection */
+    await privateBid.save({privateCollection: req.sender});
+
+    /** return the public bid details */
+    return publicBid.toJSON();
+
     /** For testing purposes the placed bit is immediatly saved
      * @todo Remove next 2 lines when going into production
      */
-    bid.sender = this.sender;
-    await bid.save();
-    return bid;
+    // bid.sender = this.sender;
+    // await bid.save();
+    // return bid;
     
     // /** Get the 'Auction' instance on which the sender is bidding */
     // const auction = await Auction.getOne(bid.auctionId);
@@ -280,17 +305,43 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   /** Transaction that places a new ask */
   @Create('Ask')
   @Invokable()
-  public async placeAsk(
-    @Param(Ask)
-    ask: Ask
-    ) {
+  public async placeAsk():Promise<any> {
+
+    /** Retrieve the data from transaction that was sent in the transient field */
+    const req = await this.tx.getTransientValue<FullAsk>('ask', FullAsk);
+
+    /** Create new Ask with the information that should be publicly visible */
+    const publicAsk = new Ask({
+      id: req.id,
+      auctionId: req.auctionId,
+      /** @todo switch the 2 lines below, so that the ask's sender is automatically determined by the chaincode */
+      sender: req.sender
+      //sender: this.sender
+    });
+
+    /** Save new ask to the public state */
+    await publicAsk.save();
+
+    /** Create new model which stores the ask's private details */
+    const privateAsk = new AskPrivateDetails({
+      id: req.id,
+      price: req.price,
+      amount: req.amount
+    });
     
-    /** For testing purposes the placed ask is immediatly saved
-     * @todo Remove next 2 lines when going into production
-     */
-    ask.sender = this.sender;
-    await ask.save();
-    return ask;
+    /** Store the private ask details in the according private data collection */
+    await privateAsk.save({privateCollection: req.sender});
+    
+    /** return the public ask details */
+    return publicAsk.toJSON();
+
+
+    // /** For testing purposes the placed ask is immediatly saved
+    //  * @todo Remove next 2 lines when going into production
+    //  */
+    // ask.sender = this.sender;
+    // await ask.save();
+    // return ask;
 
     // /** Get the 'Auction' instance on which the sender is askding */
     // const auction = await Auction.getOne(ask.auctionId);
@@ -369,14 +420,15 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   public async sendReading(
     @Param(SmartMeterReading)
     reading: FlatConvectorModel<SmartMeterReading>,
-    // @Param(yup.string())
-    // participantId: string
+    @Param(yup.string())
+    participantId: string
     ){
     
     /** Get the participant which reading should be updated
-     * @todo for unit testing this.sender has to be replaced with participantId from above
+     * @todo for production participantId has to be replaced with  'this.sender'
      */
-    const participant = await MarketParticipant.getOne(this.sender);
+    // const participant = await MarketParticipant.getOne(this.sender);
+    const participant = await MarketParticipant.getOne(participantId);
     participant.readings.push(reading);
     await participant.save();
     return participant;
@@ -411,20 +463,52 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     if (txTimestamp > auction.end) {
       
       /** Get all bids related to the specified 'auctionId' */
-      const bids = <Bid[]>(await Bid.query(Bid, {
+      const publicBids = <Bid[]>(await Bid.query(Bid, {
         "selector": {
           "type": "de.rli.hypenergy.bid",
           "auctionId": auctionId
         }
       }));
 
+      const bids = new Array<FullBid>();
+      for(const bid of publicBids) {
+        const bidPrivateDetails = await BidPrivateDetails.getOne(bid.id, BidPrivateDetails, {
+          privateCollection: bid.sender
+        });
+        const mergedBid = new FullBid({
+          id: bid.id,
+          auctionId: bid.auctionId,
+          sender: bid.sender,
+          amount: bidPrivateDetails.amount,
+          price: bidPrivateDetails.price
+        });
+        bids.push(mergedBid);
+      }
+
+      
       /** Get all asks related to the specified 'auctionId' */
-      const asks = <Ask[]>(await Ask.query(Ask, {
+      const publicAsks = <Ask[]>(await Ask.query(Ask, {
         "selector": {
           "type": "de.rli.hypenergy.ask",
           "auctionId": auctionId
         }
       }));
+
+      const asks = new Array<FullAsk>();
+      for(const ask of publicAsks) {
+        const askPrivateDetails = await AskPrivateDetails.getOne(ask.id, AskPrivateDetails, {
+          privateCollection: ask.sender
+        });
+        const mergedAsk = new FullAsk({
+          id: ask.id,
+          auctionId: ask.auctionId,
+          sender: ask.sender,
+          amount: askPrivateDetails.amount,
+          price: askPrivateDetails.price
+        });
+        asks.push(mergedAsk);
+      }
+
 
       /** Go through all bids and asks and find the lowest price */
       let lowestPrice = [...bids, ...asks].reduce(function (acc, element) {
@@ -486,52 +570,77 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
           if (supplyCurve[i] > demandCurve[i]) {
             /** Tag all bids which price is higher of equal to the MCP as 'successful' */
             for (const bid of bids.filter(bid => bid.price >= i)) {
-              await bid.update({successful: true})
+              /** Find the corresponding "public" bid in the publicBids array and update to 'successful' */
+              await publicBids.find(publicBid => publicBid.id == bid.id).update({successful: true})
             }
             /** Tag all asks which price is smaller than the MCP as 'successful' as long as there is enough demand */
             for (const ask of asks.filter(ask => ask.price < i)) {
                 maxMatchedAmount -= ask.amount;
                 auction.matchedAmount += ask.amount;
-                await ask.update({successful: true});
+                /** Find the corresponding "public" ask in the publiAsks array and update to 'successful'*/
+                await publicAsks.find(publicAsk => publicAsk.id == ask.id).update({successful: true});
             }
             /** Tag all asks which price is equal to the MCP as 'successful' as long as there is enough demand */
             for (const ask of asks.filter(ask => ask.price == i)) {
               if ((maxMatchedAmount - ask.amount) >= 0) {
                 maxMatchedAmount -= ask.amount;
                 auction.matchedAmount += ask.amount;
-                await ask.update({successful: true});
+                /** Find the corresponding "public" ask in the publiAsks array and update to 'successful'*/
+                await publicAsks.find(publicAsk => publicAsk.id == ask.id).update({successful: true});
               } else {  
                 /** Here the ask that cannot fully be satisfied is split!
                  * @remark this is a design choice that can certainly be discussed and can easily be changed by removing the next 3 lines */
                 ask.unmatchedAmount = ask.amount - maxMatchedAmount;
                 auction.matchedAmount += maxMatchedAmount;
-                await ask.update({successful: true});
+                /** Find the corresponding "public" ask in the publiAsks array and update to 'successful'*/
+                await publicAsks.find(publicAsk => publicAsk.id == ask.id).update({successful: true});
+
+                /** Update the private details of the ask to include the 'unmatchedAmount' */
+                const privateAsk = new AskPrivateDetails({
+                  id: ask.id,
+                  price: ask.price,
+                  amount: ask.amount,
+                  unmatchedAmount: ask.unmatchedAmount
+                });
+                await privateAsk.save({privateCollection: ask.sender});
+                
                 break;
               }
             }
           } else {  // could be else if (D > S) and then else when equal 
             /** Tag all asks which price is smaller or equal to the MCP as 'successful' */
             for (const ask of asks.filter(ask => ask.price <= i)) {
-              await ask.update({successful: true});
+              /** Find the corresponding "public" ask in the publiAsks array and update to 'successful'*/
+              await publicAsks.find(publicAsk => publicAsk.id == ask.id).update({successful: true});
             }
             /** Tag all bids which price is higher than the MCP as 'successful' as long as there is enough supply */
             for (const bid of bids.filter(bid => bid.price > i)) {
                 maxMatchedAmount -= bid.amount;
                 auction.matchedAmount += bid.amount;
-                await bid.update({successful: true});
+                await publicBids.find(publicBid => publicBid.id == bid.id).update({successful: true})
             }
             /** Tag all bids which price is equal to the MCP as 'successful' as long as there is enough supply */
             for (const bid of bids.filter(bid => bid.price == i)) {
               if ((maxMatchedAmount - bid.amount) >= 0) {
                 maxMatchedAmount -= bid.amount;
                 auction.matchedAmount += bid.amount;
-                await bid.update({successful: true});
+                await publicBids.find(publicBid => publicBid.id == bid.id).update({successful: true})
               } else {
                 /** Here the bid that cannot fully be satisfied is split!
                  * @remark this is a design choice that can certainly be discussed and can easily be changed by removing the next 3 lines */
                 bid.unmatchedAmount = bid.amount - maxMatchedAmount;
                 auction.matchedAmount += maxMatchedAmount;
-                await bid.update({successful: true});
+                await publicBids.find(publicBid => publicBid.id == bid.id).update({successful: true})
+                
+                /** Update the private details of the bid to include the 'unmatchedAmount' */
+                const privateBid = new BidPrivateDetails({
+                  id: bid.id,
+                  price: bid.price,
+                  amount: bid.amount,
+                  unmatchedAmount: bid.unmatchedAmount
+                });
+                await privateBid.save({privateCollection: bid.sender});
+
                 break;
               }
             }
@@ -588,7 +697,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     const participants = await MarketParticipant.getAll();
 
     /** Get all bids related to the specified 'auctionId' */
-    const successfulBids = <Bid[]>(await Bid.query(Bid, {
+    const publicBids = <Bid[]>(await Bid.query(Bid, {
       "selector": {
         "type": "de.rli.hypenergy.bid",
         "auctionId": auctionId,
@@ -596,14 +705,45 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
       }
     }));
 
+    const successfulBids = new Array<FullBid>();
+      for(const bid of publicBids) {
+        const bidPrivateDetails = await BidPrivateDetails.getOne(bid.id, BidPrivateDetails, {
+          privateCollection: bid.sender
+        });
+        const mergedBid = new FullBid({
+          id: bid.id,
+          auctionId: bid.auctionId,
+          sender: bid.sender,
+          amount: bidPrivateDetails.amount,
+          price: bidPrivateDetails.price
+        });
+        successfulBids.push(mergedBid);
+      }
+
+
+
     /** Get all asks related to the specified 'auctionId' */
-    const successfulAsks = <Ask[]>(await Ask.query(Ask, {
+    const publicAsks = <Ask[]>(await Ask.query(Ask, {
       "selector": {
         "type": "de.rli.hypenergy.ask",
         "auctionId": auctionId,
         "successful": true
       }
     }));
+    const successfulAsks = new Array<FullAsk>();
+      for(const ask of publicAsks) {
+        const askPrivateDetails = await AskPrivateDetails.getOne(ask.id, AskPrivateDetails, {
+          privateCollection: ask.sender
+        });
+        const mergedAsk = new FullAsk({
+          id: ask.id,
+          auctionId: ask.auctionId,
+          sender: ask.sender,
+          amount: askPrivateDetails.amount,
+          price: askPrivateDetails.price
+        });
+        successfulAsks.push(mergedAsk);
+      }
 
     /**
      * @remark It might be more efficient to map all necessary data of each participant to a new variable
