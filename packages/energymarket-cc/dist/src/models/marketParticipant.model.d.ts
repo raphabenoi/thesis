@@ -5,13 +5,13 @@ export declare enum ParticipantType {
     prosumer = "prosumer"
 }
 export declare class SmartMeterReading extends ConvectorModel<SmartMeterReading> {
-    readonly type = "de.rli.hypenergy.smartMeterReading";
+    readonly type: string;
     auctionPeriod: string;
     consumed: number;
     produced: number;
 }
 export declare class MarketParticipant extends ConvectorModel<MarketParticipant> {
-    readonly type = "de.rli.hypenergy.marketParticipant";
+    readonly type: string;
     name: string;
     is: ParticipantType;
     coinBalance: number;

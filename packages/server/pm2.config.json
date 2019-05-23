@@ -1,0 +1,17 @@
+{
+  "apps" : [
+    {
+      "name": "Hypenergy Energy Trading Platform",
+      "script": "./dist/app.js",
+      "node_args": "--inspect=0.0.0.0:9222",
+      "env": {
+      },
+      "watch": [
+        "src",
+        "dist",
+        "node_modules",
+        ".env"
+      ]
+    }
+  ]
+}

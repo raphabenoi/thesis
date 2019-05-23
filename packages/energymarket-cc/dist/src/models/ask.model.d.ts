@@ -1,6 +1,6 @@
 import { ConvectorModel } from '@worldsibu/convector-core-model';
 export declare class FullAsk extends ConvectorModel<FullAsk> {
-    readonly type = "de.rli.hypenergy.askTransientInput";
+    readonly type: string;
     readonly auctionId: string;
     sender: string;
     amount: number;
@@ -9,13 +9,13 @@ export declare class FullAsk extends ConvectorModel<FullAsk> {
     unmatchedAmount: number;
 }
 export declare class Ask extends ConvectorModel<Ask> {
-    readonly type = "de.rli.hypenergy.ask";
+    readonly type: string;
     readonly auctionId: string;
     sender: string;
     successful: boolean;
 }
 export declare class AskPrivateDetails extends ConvectorModel<AskPrivateDetails> {
-    readonly type = "de.rli.hypenergy.ask";
+    readonly type: string;
     amount: number;
     price: number;
     unmatchedAmount: number;

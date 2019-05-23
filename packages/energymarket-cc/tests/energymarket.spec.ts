@@ -14,7 +14,7 @@ import { Market } from '../src/models/market.model';
 import { Grid } from '../src/models/grid.model';
 import { MarketParticipant, ParticipantType, SmartMeterReading } from '../src/models/marketParticipant.model';
 import { ENGINE_METHOD_ALL } from 'constants';
-import { debug } from 'util';
+//import { debug } from 'util';
 import { read } from 'fs';
 // import { parentPort } from 'worker_threads';
 

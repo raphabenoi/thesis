@@ -6,7 +6,7 @@ export declare enum AuctionStatus {
     escrowed = "escrowed"
 }
 export declare class Auction extends ConvectorModel<Auction> {
-    readonly type = "de.rli.hypenergy.auction";
+    readonly type: string;
     status: AuctionStatus;
     readonly start: number;
     readonly end: number;

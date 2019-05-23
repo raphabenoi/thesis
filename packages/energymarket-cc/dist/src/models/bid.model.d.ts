@@ -1,6 +1,6 @@
 import { ConvectorModel } from '@worldsibu/convector-core-model';
 export declare class FullBid extends ConvectorModel<FullBid> {
-    readonly type = "de.rli.hypenergy.bidTransientInput";
+    readonly type: string;
     readonly auctionId: string;
     sender: string;
     amount: number;
@@ -9,13 +9,13 @@ export declare class FullBid extends ConvectorModel<FullBid> {
     unmatchedAmount: number;
 }
 export declare class Bid extends ConvectorModel<Bid> {
-    readonly type = "de.rli.hypenergy.bid";
+    readonly type: string;
     readonly auctionId: string;
     sender: string;
     successful: boolean;
 }
 export declare class BidPrivateDetails extends ConvectorModel<BidPrivateDetails> {
-    readonly type = "de.rli.hypenergy.bid";
+    readonly type: string;
     amount: number;
     price: number;
     unmatchedAmount: number;
