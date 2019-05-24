@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var express_1 = require("express");
 var convector_1 = require("../convector");
-var src_1 = require("../../../energymarket-cc/src");
+var energymarket_cc_1 = require("energymarket-cc");
 var router = express_1.Router();
 router.post('/market', function (req, res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
     var _a, id, gridBuyPrice, gridSellPrice, marketToCreate, err_1;
@@ -13,7 +13,7 @@ router.post('/market', function (req, res) { return tslib_1.__awaiter(_this, voi
             case 0:
                 _b.trys.push([0, 2, , 3]);
                 _a = req.body, id = _a.id, gridBuyPrice = _a.gridBuyPrice, gridSellPrice = _a.gridSellPrice;
-                marketToCreate = new src_1.Market({ id: id, gridBuyPrice: gridBuyPrice, gridSellPrice: gridSellPrice });
+                marketToCreate = new energymarket_cc_1.Market({ id: id, gridBuyPrice: gridBuyPrice, gridSellPrice: gridSellPrice });
                 return [4, convector_1.EnergymarketControllerBackEnd.createMarket(marketToCreate)];
             case 1:
                 _b.sent();
@@ -37,7 +37,7 @@ router.get('/market', function (req, res) { return tslib_1.__awaiter(_this, void
                 return [4, convector_1.EnergymarketControllerBackEnd.getAllMarkets()];
             case 1:
                 marketArray = _a.sent();
-                marketToReturn = new src_1.Market(marketArray[0]);
+                marketToReturn = new energymarket_cc_1.Market(marketArray[0]);
                 res.send(marketToReturn.toJSON());
                 return [3, 3];
             case 2:
@@ -56,7 +56,7 @@ router.post('/grid', function (req, res) { return tslib_1.__awaiter(_this, void 
             case 0:
                 _b.trys.push([0, 2, , 3]);
                 _a = req.body, id = _a.id, gridBuyPrice = _a.gridBuyPrice, gridSellPrice = _a.gridSellPrice;
-                gridToCreate = new src_1.Grid({ id: id, gridBuyPrice: gridBuyPrice, gridSellPrice: gridSellPrice });
+                gridToCreate = new energymarket_cc_1.Grid({ id: id, gridBuyPrice: gridBuyPrice, gridSellPrice: gridSellPrice });
                 return [4, convector_1.EnergymarketControllerBackEnd.createGrid(gridToCreate)];
             case 1:
                 _b.sent();
@@ -80,7 +80,7 @@ router.get('/grid', function (req, res) { return tslib_1.__awaiter(_this, void 0
                 return [4, convector_1.EnergymarketControllerBackEnd.getAllGrids()];
             case 1:
                 gridArray = _a.sent();
-                gridToReturn = new src_1.Grid(gridArray[0]);
+                gridToReturn = new energymarket_cc_1.Grid(gridArray[0]);
                 res.send(gridToReturn.toJSON());
                 return [3, 3];
             case 2:
@@ -99,7 +99,7 @@ router.post('/auction', function (req, res) { return tslib_1.__awaiter(_this, vo
             case 0:
                 _b.trys.push([0, 2, , 3]);
                 _a = req.body, id = _a.id, start = _a.start, end = _a.end;
-                auctionToCreate = new src_1.Auction({ id: id, start: start, end: end });
+                auctionToCreate = new energymarket_cc_1.Auction({ id: id, start: start, end: end });
                 return [4, convector_1.EnergymarketControllerBackEnd.createAuction(auctionToCreate)];
             case 1:
                 _b.sent();
@@ -163,18 +163,18 @@ router.post('/marketParticipant', function (req, res) { return tslib_1.__awaiter
                 _b.trys.push([0, 2, , 3]);
                 _a = req.body, id = _a.id, name = _a.name, is = _a.is, coinBalance = _a.coinBalance, energyBalance = _a.energyBalance;
                 if (is == "consumer") {
-                    is = src_1.ParticipantType.consumer;
+                    is = energymarket_cc_1.ParticipantType.consumer;
                 }
                 else if (is == "producer") {
-                    is = src_1.ParticipantType.producer;
+                    is = energymarket_cc_1.ParticipantType.producer;
                 }
                 else if (is == "prosumer") {
-                    is = src_1.ParticipantType.prosumer;
+                    is = energymarket_cc_1.ParticipantType.prosumer;
                 }
                 else {
                     throw new Error("participant type could not be processed correctly");
                 }
-                marketParticipantToCreate = new src_1.MarketParticipant({ id: id, name: name, is: is, coinBalance: coinBalance, energyBalance: energyBalance });
+                marketParticipantToCreate = new energymarket_cc_1.MarketParticipant({ id: id, name: name, is: is, coinBalance: coinBalance, energyBalance: energyBalance });
                 return [4, convector_1.EnergymarketControllerBackEnd.createMarketParticipant(marketParticipantToCreate)];
             case 1:
                 _b.sent();
@@ -237,7 +237,7 @@ router.post('/bid', function (req, res) { return tslib_1.__awaiter(_this, void 0
             case 0:
                 _b.trys.push([0, 2, , 3]);
                 _a = req.body, id = _a.id, auctionId = _a.auctionId, amount = _a.amount, price = _a.price, sender = _a.sender;
-                bid = new src_1.FullBid({ id: id, auctionId: auctionId, amount: amount, price: price, sender: sender });
+                bid = new energymarket_cc_1.FullBid({ id: id, auctionId: auctionId, amount: amount, price: price, sender: sender });
                 return [4, convector_1.EnergymarketControllerBackEnd
                         .$config({ transient: { bid: bid.toJSON() } })
                         .placeBid()];
@@ -323,7 +323,7 @@ router.post('/ask', function (req, res) { return tslib_1.__awaiter(_this, void 0
             case 0:
                 _b.trys.push([0, 2, , 3]);
                 _a = req.body, id = _a.id, auctionId = _a.auctionId, amount = _a.amount, price = _a.price, sender = _a.sender;
-                ask = new src_1.FullAsk({ id: id, auctionId: auctionId, amount: amount, price: price, sender: sender });
+                ask = new energymarket_cc_1.FullAsk({ id: id, auctionId: auctionId, amount: amount, price: price, sender: sender });
                 return [4, convector_1.EnergymarketControllerBackEnd
                         .$config({ transient: { ask: ask.toJSON() } })
                         .placeAsk()];
@@ -431,7 +431,7 @@ router.post('/smartMeter/:id', function (req, res) { return tslib_1.__awaiter(_t
                 _b.trys.push([0, 2, , 3]);
                 participantId = req.params.participantId;
                 _a = req.body, auctionPeriod = _a.auctionPeriod, consumed = _a.consumed, produced = _a.produced;
-                reading = new src_1.SmartMeterReading({ auctionPeriod: auctionPeriod, consumed: consumed, produced: produced });
+                reading = new energymarket_cc_1.SmartMeterReading({ auctionPeriod: auctionPeriod, consumed: consumed, produced: produced });
                 return [4, convector_1.EnergymarketControllerBackEnd.sendReading(reading, participantId)];
             case 1:
                 participantWithReading = _b.sent();

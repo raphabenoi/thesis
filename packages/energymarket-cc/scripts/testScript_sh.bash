@@ -1,10 +1,7 @@
 #!/bin/bash
 #init
 cd ../../../
-lerna clean
-rm -rf node_modules
-rm package-lock.json
-npm i
+le
 hurl new -o 4
 npm run cc:start -- energymarket
 sleep 10

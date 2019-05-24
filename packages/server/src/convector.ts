@@ -6,20 +6,7 @@ import { ClientFactory } from '@worldsibu/convector-core';
 
 // import { ParticipantController, Participant } from 'participant-cc';
 // import { PersonController, Person } from 'person-cc';
-import {
-    EnergymarketController,
-    Ask,
-    AskPrivateDetails,
-    FullAsk,
-    Auction,
-    Bid,
-    BidPrivateDetails,
-    FullBid,
-    Grid,
-    Market,
-    MarketParticipant,
-    SmartMeterReading
-} from '../../energymarket-cc/src'
+import { EnergymarketController } from 'energymarket-cc';
 
 const adapter = new FabricControllerAdapter({
     txTimeout: 300000,

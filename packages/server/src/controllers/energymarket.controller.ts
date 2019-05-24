@@ -17,7 +17,7 @@ import {
     MarketParticipant,
     SmartMeterReading,
     ParticipantType
-} from '../../../energymarket-cc/src'
+} from 'energymarket-cc'
 import { identityId } from '../env';
 import { read } from 'fs';
 
