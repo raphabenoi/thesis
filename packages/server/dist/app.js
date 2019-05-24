@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var bodyParser = require("body-parser");
 var env_1 = require("./env");
-var energymarket_controller_1 = require("./controllers/energymarket.controller");
+var controllers_1 = require("./controllers");
 var app = express();
 var port = env_1.port;
 app.use(bodyParser.urlencoded({
@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({
     limit: '40mb'
 }));
 app.use(bodyParser.json({ limit: '40mb' }));
-app.use('/energymarket', energymarket_controller_1.EnergymarketExpressController);
+app.use('/energymarket', controllers_1.EnergymarketExpressController);
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');

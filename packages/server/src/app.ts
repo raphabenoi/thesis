@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { port as serverPort } from './env';
 // import { ParticipantExpressController, PersonExpressController } from './controllers';
-import { EnergymarketExpressController } from './controllers/energymarket.controller';
+import { EnergymarketExpressController } from './controllers';
 
 const app: express.Application = express();
 const port = serverPort;
