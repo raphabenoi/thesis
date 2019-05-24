@@ -5,7 +5,7 @@ lerna clean
 rm -rf node_modules
 rm package-lock.json
 npm i
-hurl new -o 4 -u 2
+hurl new -o 4
 npm run cc:start -- energymarket
 sleep 10
 #conv-rest-api generate api -c energymarket -p hypenergy

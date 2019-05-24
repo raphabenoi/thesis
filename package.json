@@ -6,9 +6,11 @@
     "dist/*"
   ],
   "scripts": {
+    "start": "npm run env:restart && npm run cc:start -- energymarket",
+    "seed": "./seed.sh",
     "install": "npm-run-all -s lerna:install",
     "build": "node ./update-paths.js",
-    "env:restart": "hurl new",
+    "env:restart": "hurl new -o 4",
     "test": "npm-run-all -s lerna:test",
     "env:clean": "hurl clean",
     "cc:start": "f() { npm run cc:package -- $1 org1; npm run cc:install $1; }; f",
@@ -21,10 +23,11 @@
     "cc:install": "f() { hurl install $1 node -P ./chaincode-$1; }; f",
     "cc:install:debug": "f() { hurl install $1 node -P ./chaincode-$1 --debug; }; f",
     "cc:invoke": "f() { chaincode-manager --config ./$2.$1.config.json --user $3 invoke $1 ${@:4}; }; f",
-    "lerna:test": "lerna exec npm run test"
+    "lerna:test": "lerna exec npm run test",
+    "copy:indexes": "f () { mkdir -p ./chaincode-$1/META-INF/statedb/couchdb/indexes; cp -a ./indexes/ ./chaincode-$1/META-INF/statedb/couchdb/indexes; }; f"
   },
   "devDependencies": {
-    "lerna": "^3.13.0",
+    "lerna": "^3.13.1",
     "@worldsibu/convector-adapter-mock": "~1.3.3",
     "@worldsibu/convector-platform-fabric": "~1.3.3",
     "@worldsibu/hurley": "~1.0.0",

@@ -36,7 +36,7 @@ export const initAdapter = adapter.init();
 // export const PersonControllerBackEnd = ClientFactory(PersonController, adapter);
 export const EnergymarketControllerBackEnd = ClientFactory(EnergymarketController, adapter);
 
-//#region Optional
+// // #region Optional
 
 // /**
 //  * Check if the identity has been initialized in the chaincode.

@@ -1,11 +1,12 @@
 {
-  "apps" : [
+  "apps": [
     {
-      "name": "Hypenergy Energy Trading Platform",
+      "name": "Hypenergy Energymarket App",
       "script": "./dist/app.js",
-      "node_args": "--inspect=0.0.0.0:9222",
-      "env": {
-      },
+      "node_args": "--inspect=0.0.0.0:8888",
+      "error_file": "../log/error.log",
+      "out_file": "../log/access.log",
+      "env": {},
       "watch": [
         "src",
         "dist",
