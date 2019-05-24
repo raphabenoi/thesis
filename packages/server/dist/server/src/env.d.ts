@@ -1,0 +1,12 @@
+export declare const chaincode: string;
+export declare const channel: string;
+export declare const identityId: string;
+export declare const identityName: string;
+export declare const identityOrg: string;
+export declare const keyStore: string;
+export declare const networkProfile: string;
+export declare const port: string | number;
+export declare const couchDBView: string;
+export declare const couchDBProtocol: string;
+export declare const couchDBHost: string;
+export declare const couchDBPort: string | number;
