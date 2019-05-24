@@ -91,7 +91,7 @@ router.post('/auction', async (req: Request, res: Response) => {
     } catch (err) {
         console.log(JSON.stringify(err));
         res.status(500).send(err);
-    }
+     }
 });
 
 /** Get Auction by 'id' */

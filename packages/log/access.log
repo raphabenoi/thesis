@@ -1,0 +1,39 @@
+Server started in port 8000
+{}
+{}
+{}
+{}
+{}
+Server started in port 8000
+Server started in port 8000
+{}
+{}
+{}
+Server started in port 8000
+Server started in port 8000
+{}
+{}
+{}
+{}
+Server started in port 8000
+Server started in port 8000
+{}
+{}
+{}
+{}
+{}
+{}
+{}
+{}
+{}
+{}
+Server started in port 8000
+{}
+{}
+{}
+{}
+Server started in port 8000
+{"code":"CLIENT_RES_ERR","explanation":"Chaincode error, this is a wrapper around the responses","description":"There was a problem while invoking the chaincode","responses":[{"response":{"status":500,"payload":{"type":"Buffer","data":[]},"peer":{"url":"grpc://localhost:7051","name":"peer0.org1.hurley.lab","options":{"grpc.max_receive_message_length":-1,"grpc.max_send_message_length":-1,"grpc.keepalive_time_ms":600000,"grpc.http2.min_time_between_pings_ms":120000,"grpc.keepalive_timeout_ms":20000,"grpc.http2.max_pings_without_data":0,"grpc.keepalive_permit_without_calls":1,"name":"peer0.org1.hurley.lab","grpc.ssl_target_name_override":"peer0.org1.hurley.lab","grpc.default_authority":"peer0.org1.hurley.lab"}},"isProposalResponse":true},"error":{"name":"Error","status":500,"message":"PUT_STATE failed: transaction ID: 455b480e7069116ade7704519ace16d178203fb56fcc664db9d9f796ad57e23c: collection config not defined for chaincode [energymarket], pass the collection configuration upon chaincode definition/instantiation"}},{"response":{"status":500,"payload":{"type":"Buffer","data":[]},"peer":{"url":"grpc://localhost:7151","name":"peer0.org2.hurley.lab","options":{"grpc.max_receive_message_length":-1,"grpc.max_send_message_length":-1,"grpc.keepalive_time_ms":600000,"grpc.http2.min_time_between_pings_ms":120000,"grpc.keepalive_timeout_ms":20000,"grpc.http2.max_pings_without_data":0,"grpc.keepalive_permit_without_calls":1,"name":"peer0.org2.hurley.lab","grpc.ssl_target_name_override":"peer0.org2.hurley.lab","grpc.default_authority":"peer0.org2.hurley.lab"}},"isProposalResponse":true},"error":{"name":"Error","status":500,"message":"PUT_STATE failed: transaction ID: 455b480e7069116ade7704519ace16d178203fb56fcc664db9d9f796ad57e23c: collection config not defined for chaincode [energymarket], pass the collection configuration upon chaincode definition/instantiation"}},{"response":{"status":500,"payload":{"type":"Buffer","data":[]},"peer":{"url":"grpc://localhost:7251","name":"peer0.org3.hurley.lab","options":{"grpc.max_receive_message_length":-1,"grpc.max_send_message_length":-1,"grpc.keepalive_time_ms":600000,"grpc.http2.min_time_between_pings_ms":120000,"grpc.keepalive_timeout_ms":20000,"grpc.http2.max_pings_without_data":0,"grpc.keepalive_permit_without_calls":1,"name":"peer0.org3.hurley.lab","grpc.ssl_target_name_override":"peer0.org3.hurley.lab","grpc.default_authority":"peer0.org3.hurley.lab"}},"isProposalResponse":true},"error":{"name":"Error","status":500,"message":"PUT_STATE failed: transaction ID: 455b480e7069116ade7704519ace16d178203fb56fcc664db9d9f796ad57e23c: collection config not defined for chaincode [energymarket], pass the collection configuration upon chaincode definition/instantiation"}},{"response":{"status":500,"payload":{"type":"Buffer","data":[]},"peer":{"url":"grpc://localhost:7351","name":"peer0.org4.hurley.lab","options":{"grpc.max_receive_message_length":-1,"grpc.max_send_message_length":-1,"grpc.keepalive_time_ms":600000,"grpc.http2.min_time_between_pings_ms":120000,"grpc.keepalive_timeout_ms":20000,"grpc.http2.max_pings_without_data":0,"grpc.keepalive_permit_without_calls":1,"name":"peer0.org4.hurley.lab","grpc.ssl_target_name_override":"peer0.org4.hurley.lab","grpc.default_authority":"peer0.org4.hurley.lab"}},"isProposalResponse":true},"error":{"name":"Error","status":500,"message":"PUT_STATE failed: transaction ID: 455b480e7069116ade7704519ace16d178203fb56fcc664db9d9f796ad57e23c: collection config not defined for chaincode [energymarket], pass the collection configuration upon chaincode definition/instantiation"}}],"message":"\n    CLIENT_RES_ERR\n    There was a problem while invoking the chaincode\n    Chaincode error, this is a wrapper around the responses\n\n    Original stack:\n    {\"name\":\"Error\",\"status\":500,\"message\":\"PUT_STATE failed: transaction ID: 455b480e7069116ade7704519ace16d178203fb56fcc664db9d9f796ad57e23c: collection config not defined for chaincode [energymarket], pass the collection configuration upon chaincode definition/instantiation\"}\n    "}
+{}
+{}
+{}
