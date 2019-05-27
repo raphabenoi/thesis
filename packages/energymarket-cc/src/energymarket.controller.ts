@@ -127,6 +127,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
      * @todo Make sure no other 'Market' instance exists 
      * @todo Restrict creation of this instance to 'LocalMarketOperator' admin
     */
+    debugger;
     await market.save();
   }
 

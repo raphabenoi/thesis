@@ -120,7 +120,7 @@ router.get('/auction/:id', function (req, res) { return tslib_1.__awaiter(_this,
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                id = req.params.id.id;
+                id = req.params.id;
                 return [4, convector_1.EnergymarketControllerBackEnd.getAuctionById(id)];
             case 1:
                 auctionToReturn = _a.sent();
@@ -195,7 +195,7 @@ router.get('/marketParticipant/:id', function (req, res) { return tslib_1.__awai
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                id = req.params.id.id;
+                id = req.params.id;
                 return [4, convector_1.EnergymarketControllerBackEnd.getMarketParticipantById(id)];
             case 1:
                 marketParticipantToReturn = _a.sent();
