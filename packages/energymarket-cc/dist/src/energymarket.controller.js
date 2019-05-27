@@ -148,21 +148,21 @@ var EnergymarketController = (function (_super) {
     EnergymarketController.prototype.placeBid = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var bid, participant, publicBid, privateBid;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.tx.getTransientValue('bid', bid_model_1.FullBid)];
                     case 1:
                         bid = _a.sent();
-                        return [4, marketParticipant_model_1.MarketParticipant.query(marketParticipant_model_1.MarketParticipant, {
-                                "selector": {
-                                    "type": "de.rli.hypenergy.marketParticipant",
-                                    "fingerprint": this.sender
-                                }
-                            })];
+                        return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
                     case 2:
-                        participant = (_a.sent());
+                        participant = _a.sent();
+                        console.log('participant.fingerprint:' + participant.fingerprint);
+                        console.log('participant.id:' + participant.id);
+                        console.log('this.sender:' + this.sender);
+                        console.log('bid.sender:' + bid.sender);
                         if (participant.id !== bid.sender) {
-                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be " + participant.id + ". But 'bid.sender' was " + bid.sender);
+                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be '" + participant.id + "'. But 'bid.sender' was '" + bid.sender + "'");
                         }
                         publicBid = new bid_model_1.Bid({
                             id: bid.id,
@@ -228,21 +228,17 @@ var EnergymarketController = (function (_super) {
     EnergymarketController.prototype.placeAsk = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var ask, participant, publicAsk, privateAsk;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.tx.getTransientValue('ask', ask_model_1.FullAsk)];
                     case 1:
                         ask = _a.sent();
-                        return [4, marketParticipant_model_1.MarketParticipant.query(marketParticipant_model_1.MarketParticipant, {
-                                "selector": {
-                                    "type": "de.rli.hypenergy.marketParticipant",
-                                    "fingerprint": this.sender
-                                }
-                            })];
+                        return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
                     case 2:
-                        participant = (_a.sent());
+                        participant = _a.sent();
                         if (participant.id !== ask.sender) {
-                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be " + participant.id + ". But 'bid.sender' was " + ask.sender);
+                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be '" + participant.id + "'. But 'bid.sender' was '" + ask.sender + "'");
                         }
                         publicAsk = new ask_model_1.Ask({
                             id: ask.id,
@@ -308,16 +304,12 @@ var EnergymarketController = (function (_super) {
     EnergymarketController.prototype.sendReading = function (reading) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var participant;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.query(marketParticipant_model_1.MarketParticipant, {
-                            "selector": {
-                                "type": "de.rli.hypenergy.marketParticipant",
-                                "fingerprint": this.sender
-                            }
-                        })];
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
                     case 1:
-                        participant = (_a.sent());
+                        participant = _a.sent();
                         participant.readings.push(reading);
                         return [4, participant.save()];
                     case 2:

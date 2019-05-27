@@ -184,14 +184,21 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     const bid = await this.tx.getTransientValue<FullBid>('bid', FullBid);
 
     /** Get the participant which is sending the transaction and which wants to place a bid */
-    let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
-      "selector": {
-        "type": "de.rli.hypenergy.marketParticipant",
-        "fingerprint": this.sender
-      }
-    }));
+    // let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
+    //   "selector": {
+    //     "type": "de.rli.hypenergy.marketParticipant",
+    //     "fingerprint": this.sender
+    //   }
+    // }));
 
-    if(participant.id !== bid.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be ${participant.id}. But 'bid.sender' was ${bid.sender}`)}
+    let participant = await MarketParticipant.getAll().then(participants => participants.find(participant => participant.fingerprint === this.sender));
+
+    console.log('participant.fingerprint:' + participant.fingerprint);
+    console.log('participant.id:' + participant.id);
+    console.log('this.sender:' + this.sender);
+    console.log('bid.sender:' + bid.sender);
+
+    if(participant.id !== bid.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be '${participant.id}'. But 'bid.sender' was '${bid.sender}'`)}
 
     /** Create new Bid with the information that should be publicly visible */
     const publicBid = new Bid({
@@ -322,14 +329,9 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     const ask = await this.tx.getTransientValue<FullAsk>('ask', FullAsk);
 
     /** Get the participant which is sending the transaction and which wants to place an ask */
-    let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
-      "selector": {
-        "type": "de.rli.hypenergy.marketParticipant",
-        "fingerprint": this.sender
-      }
-    }));
+    let participant = await MarketParticipant.getAll().then(participants => participants.find(participant => participant.fingerprint === this.sender));
 
-    if(participant.id !== ask.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be ${participant.id}. But 'bid.sender' was ${ask.sender}`)}
+    if(participant.id !== ask.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be '${participant.id}'. But 'bid.sender' was '${ask.sender}'`)}
 
     /** Create new Ask with the information that should be publicly visible */
     const publicAsk = new Ask({
@@ -444,12 +446,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     ){
     
     /** Get the participant which is sending the transaction and which wants to add a reading */
-    let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
-      "selector": {
-        "type": "de.rli.hypenergy.marketParticipant",
-        "fingerprint": this.sender
-      }
-    }));
+    let participant = await MarketParticipant.getAll().then(participants => participants.find(participant => participant.fingerprint === this.sender));
 
     participant.readings.push(reading);
     await participant.save();

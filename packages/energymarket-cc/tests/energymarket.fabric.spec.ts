@@ -161,7 +161,7 @@ describe('Energymarket', () => {
 
     debugger;
 
-    expect(savedPAR.length).to.be.an('array').lengthOf(numberOfOrganisations-2);
+    expect(savedPAR).to.be.an('array').lengthOf(numberOfOrganisations-2);
     expect(savedLMO.id).to.eql(lmo.id);
     expect(savedGRID.id).to.eql(grid.id);
   });
@@ -368,7 +368,7 @@ describe('Energymarket', () => {
       });
     }
     for (const ask of asks) { 
-      await energymarketCtrl[Object.keys(fingerprint).find(key => fingerprint[key] === ask.sender)]
+      await energymarketCtrl[ask.sender.substring(4,)]
         .$config({transient: { ask: ask.toJSON() }})
         .placeAsk();
     };
@@ -455,7 +455,7 @@ describe('Energymarket', () => {
         produced: askAmount + Math.floor(Math.random() * askAmount/10) - Math.floor(Math.random() * askAmount/10)
       });
 
-      for (let i=3; i<=numberOfOrganisations; i++) { await energymarketCtrl['org' + (i)].sendReading(readings[i-3]); }
+      for (let i=3; i<=numberOfOrganisations; i++) { await energymarketCtrl['org' + i].sendReading(readings[i-3]); }
 
       let savedPAR = await energymarketCtrl.org1.getAllMarketParticipants().then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
       savedPAR.forEach(participant => expect(participant.readings).to.be.an('array').lengthOf(1));
