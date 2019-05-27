@@ -174,7 +174,7 @@ router.post('/marketParticipant', function (req, res) { return tslib_1.__awaiter
                 else {
                     throw new Error("participant type could not be processed correctly");
                 }
-                marketParticipantToCreate = new energymarket_cc_1.MarketParticipant({ id: id, name: name, is: is, coinBalance: coinBalance, energyBalance: energyBalance });
+                marketParticipantToCreate = new energymarket_cc_1.MarketParticipant({ id: id, fingerprint: fingerprint, is: is, coinBalance: coinBalance, energyBalance: energyBalance });
                 return [4, convector_1.EnergymarketControllerBackEnd.createMarketParticipant(marketParticipantToCreate)];
             case 1:
                 _b.sent();

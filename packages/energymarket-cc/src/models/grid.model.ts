@@ -12,6 +12,10 @@ export class Grid extends ConvectorModel<Grid> {
   @Required()
   public readonly type = 'de.rli.hypenergy.grid';
 
+  /**  Fingerprint (similar to public key) of the grid party */
+  @Validate(yup.string())
+  public fingerprint: string;
+
   /** Coin balance where 1 coin = 1 euro cent = 0.01 euro */
   @Required()
   @Validate(yup.number())

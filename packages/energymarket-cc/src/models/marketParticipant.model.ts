@@ -13,7 +13,8 @@ import { ListenOptions } from 'net';
 export enum ParticipantType {
   producer = 'producer',
   consumer = 'consumer',
-  prosumer = 'prosumer'
+  prosumer = 'prosumer',
+  lmo = 'lmo'
 }
 
 export class SmartMeterReading extends ConvectorModel<SmartMeterReading>{
@@ -51,10 +52,9 @@ export class MarketParticipant extends ConvectorModel<MarketParticipant> {
   @Required()
   public readonly type = 'de.rli.hypenergy.marketParticipant';
 
-  /**  Name of the participant (can be the same as id) */
-  @Required()
+  /**  Fingerprint (similar to public key) of the marketParticipant */
   @Validate(yup.string())
-  public name: string;
+  public fingerprint: string;
 
   /** What type of market participant */
   @Required()

@@ -131,7 +131,7 @@ router.post('/marketParticipant', async (req: Request, res: Response) => {
         } else if(is == "prosumer") {
             is = ParticipantType.prosumer;
         } else { throw new Error("participant type could not be processed correctly")}
-        const marketParticipantToCreate = new MarketParticipant({ id, name, is, coinBalance, energyBalance });
+        const marketParticipantToCreate = new MarketParticipant({ id, fingerprint, is, coinBalance, energyBalance });
         await EnergymarketControllerBackEnd.createMarketParticipant(marketParticipantToCreate)
         res.status(201).send();
     } catch (err) {

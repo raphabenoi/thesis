@@ -19,7 +19,9 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, marketParticipant.save()];
+                    case 0:
+                        marketParticipant.fingerprint = this.sender;
+                        return [4, marketParticipant.save()];
                     case 1:
                         _a.sent();
                         return [2];
@@ -95,9 +97,7 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        debugger;
-                        return [4, market.save()];
+                    case 0: return [4, market.save()];
                     case 1:
                         _a.sent();
                         return [2];
@@ -122,7 +122,9 @@ var EnergymarketController = (function (_super) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, grid.save()];
+                    case 0:
+                        grid.fingerprint = this.sender;
+                        return [4, grid.save()];
                     case 1:
                         _a.sent();
                         return [2];
@@ -145,27 +147,38 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.placeBid = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var req, publicBid, privateBid;
+            var bid, participant, publicBid, privateBid;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.tx.getTransientValue('bid', bid_model_1.FullBid)];
                     case 1:
-                        req = _a.sent();
+                        bid = _a.sent();
+                        return [4, marketParticipant_model_1.MarketParticipant.query(marketParticipant_model_1.MarketParticipant, {
+                                "selector": {
+                                    "type": "de.rli.hypenergy.marketParticipant",
+                                    "fingerprint": this.sender
+                                }
+                            })];
+                    case 2:
+                        participant = (_a.sent());
+                        if (participant.id !== bid.sender) {
+                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be " + participant.id + ". But 'bid.sender' was " + bid.sender);
+                        }
                         publicBid = new bid_model_1.Bid({
-                            id: req.id,
-                            auctionId: req.auctionId,
-                            sender: req.sender
+                            id: bid.id,
+                            auctionId: bid.auctionId,
+                            sender: bid.sender
                         });
                         return [4, publicBid.save()];
-                    case 2:
+                    case 3:
                         _a.sent();
                         privateBid = new bid_model_1.BidPrivateDetails({
-                            id: req.id,
-                            price: req.price,
-                            amount: req.amount
+                            id: bid.id,
+                            price: bid.price,
+                            amount: bid.amount
                         });
-                        return [4, privateBid.save({ privateCollection: req.sender })];
-                    case 3:
+                        return [4, privateBid.save({ privateCollection: bid.sender })];
+                    case 4:
                         _a.sent();
                         return [2, publicBid.toJSON()];
                 }
@@ -214,27 +227,38 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.placeAsk = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var req, publicAsk, privateAsk;
+            var ask, participant, publicAsk, privateAsk;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.tx.getTransientValue('ask', ask_model_1.FullAsk)];
                     case 1:
-                        req = _a.sent();
+                        ask = _a.sent();
+                        return [4, marketParticipant_model_1.MarketParticipant.query(marketParticipant_model_1.MarketParticipant, {
+                                "selector": {
+                                    "type": "de.rli.hypenergy.marketParticipant",
+                                    "fingerprint": this.sender
+                                }
+                            })];
+                    case 2:
+                        participant = (_a.sent());
+                        if (participant.id !== ask.sender) {
+                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be " + participant.id + ". But 'bid.sender' was " + ask.sender);
+                        }
                         publicAsk = new ask_model_1.Ask({
-                            id: req.id,
-                            auctionId: req.auctionId,
-                            sender: req.sender
+                            id: ask.id,
+                            auctionId: ask.auctionId,
+                            sender: ask.sender
                         });
                         return [4, publicAsk.save()];
-                    case 2:
+                    case 3:
                         _a.sent();
                         privateAsk = new ask_model_1.AskPrivateDetails({
-                            id: req.id,
-                            price: req.price,
-                            amount: req.amount
+                            id: ask.id,
+                            price: ask.price,
+                            amount: ask.amount
                         });
-                        return [4, privateAsk.save({ privateCollection: req.sender })];
-                    case 3:
+                        return [4, privateAsk.save({ privateCollection: ask.sender })];
+                    case 4:
                         _a.sent();
                         return [2, publicAsk.toJSON()];
                 }
@@ -281,14 +305,19 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.sendReading = function (reading, participantId) {
+    EnergymarketController.prototype.sendReading = function (reading) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var participant;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(participantId)];
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.query(marketParticipant_model_1.MarketParticipant, {
+                            "selector": {
+                                "type": "de.rli.hypenergy.marketParticipant",
+                                "fingerprint": this.sender
+                            }
+                        })];
                     case 1:
-                        participant = _a.sent();
+                        participant = (_a.sent());
                         participant.readings.push(reading);
                         return [4, participant.save()];
                     case 2:
@@ -964,8 +993,7 @@ var EnergymarketController = (function (_super) {
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),
         convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(marketParticipant_model_1.SmartMeterReading)),
-        tslib_1.__param(1, convector_core_1.Param(yup.string()))
+        tslib_1.__param(0, convector_core_1.Param(marketParticipant_model_1.SmartMeterReading))
     ], EnergymarketController.prototype, "sendReading", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),

@@ -41,8 +41,8 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     @Param(MarketParticipant)
     marketParticipant: MarketParticipant
   ) {
-    /** @todo remove next line. It is only for testing purposes */
-    //marketParticipant.id = this.sender;
+    /** Saves the fingerprint (identity) of the invoking party in the new marketParticipant */
+    marketParticipant.fingerprint = this.sender;
     
     /** Saves the new 'MarketParticipant' to state */
     await marketParticipant.save();
@@ -127,7 +127,6 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
      * @todo Make sure no other 'Market' instance exists 
      * @todo Restrict creation of this instance to 'LocalMarketOperator' admin
     */
-    debugger;
     await market.save();
   }
 
@@ -157,6 +156,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
      * @todo Make sure no other 'Grid' instance exists 
      * @todo Restrict creation of this instance to 'LocalMarketOperator' admin
     */
+    grid.fingerprint = this.sender;
     await grid.save();
   }
 
@@ -181,14 +181,24 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   public async placeBid():Promise<any> {
     
     /** Retrieve the data from transaction that was sent in the transient field */
-    const req = await this.tx.getTransientValue<FullBid>('bid', FullBid);
+    const bid = await this.tx.getTransientValue<FullBid>('bid', FullBid);
+
+    /** Get the participant which is sending the transaction and which wants to place a bid */
+    let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
+      "selector": {
+        "type": "de.rli.hypenergy.marketParticipant",
+        "fingerprint": this.sender
+      }
+    }));
+
+    if(participant.id !== bid.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be ${participant.id}. But 'bid.sender' was ${bid.sender}`)}
 
     /** Create new Bid with the information that should be publicly visible */
     const publicBid = new Bid({
-      id: req.id,
-      auctionId: req.auctionId,
+      id: bid.id,
+      auctionId: bid.auctionId,
       /** @todo switch the 2 lines below, so that the bid's sender is automatically determined by the chaincode */
-      sender: req.sender 
+      sender: bid.sender 
       //sender: this.sender
     });
 
@@ -197,13 +207,13 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
 
     /** Create new model which stores the bid's private details */
     const privateBid = new BidPrivateDetails({
-      id: req.id,
-      price: req.price,
-      amount: req.amount
+      id: bid.id,
+      price: bid.price,
+      amount: bid.amount
     });
 
     /** Store the private bid details in the according private data collection */
-    await privateBid.save({privateCollection: req.sender});
+    await privateBid.save({privateCollection: bid.sender});
 
     /** return the public bid details */
     return publicBid.toJSON();
@@ -309,14 +319,24 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   public async placeAsk():Promise<any> {
 
     /** Retrieve the data from transaction that was sent in the transient field */
-    const req = await this.tx.getTransientValue<FullAsk>('ask', FullAsk);
+    const ask = await this.tx.getTransientValue<FullAsk>('ask', FullAsk);
+
+    /** Get the participant which is sending the transaction and which wants to place an ask */
+    let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
+      "selector": {
+        "type": "de.rli.hypenergy.marketParticipant",
+        "fingerprint": this.sender
+      }
+    }));
+
+    if(participant.id !== ask.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be ${participant.id}. But 'bid.sender' was ${ask.sender}`)}
 
     /** Create new Ask with the information that should be publicly visible */
     const publicAsk = new Ask({
-      id: req.id,
-      auctionId: req.auctionId,
+      id: ask.id,
+      auctionId: ask.auctionId,
       /** @todo switch the 2 lines below, so that the ask's sender is automatically determined by the chaincode */
-      sender: req.sender
+      sender: ask.sender
       //sender: this.sender
     });
 
@@ -325,13 +345,13 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
 
     /** Create new model which stores the ask's private details */
     const privateAsk = new AskPrivateDetails({
-      id: req.id,
-      price: req.price,
-      amount: req.amount
+      id: ask.id,
+      price: ask.price,
+      amount: ask.amount
     });
     
     /** Store the private ask details in the according private data collection */
-    await privateAsk.save({privateCollection: req.sender});
+    await privateAsk.save({privateCollection: ask.sender});
     
     /** return the public ask details */
     return publicAsk.toJSON();
@@ -420,16 +440,17 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   @Invokable()
   public async sendReading(
     @Param(SmartMeterReading)
-    reading: FlatConvectorModel<SmartMeterReading>,
-    @Param(yup.string())
-    participantId: string
+    reading: FlatConvectorModel<SmartMeterReading>
     ){
     
-    /** Get the participant which reading should be updated
-     * @todo for production participantId has to be replaced with  'this.sender'
-     */
-    // const participant = await MarketParticipant.getOne(this.sender);
-    const participant = await MarketParticipant.getOne(participantId);
+    /** Get the participant which is sending the transaction and which wants to add a reading */
+    let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
+      "selector": {
+        "type": "de.rli.hypenergy.marketParticipant",
+        "fingerprint": this.sender
+      }
+    }));
+
     participant.readings.push(reading);
     await participant.save();
     return participant;

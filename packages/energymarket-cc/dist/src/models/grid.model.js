@@ -15,6 +15,9 @@ var Grid = (function (_super) {
         convector_core_model_1.Required()
     ], Grid.prototype, "type", void 0);
     tslib_1.__decorate([
+        convector_core_model_1.Validate(yup.string())
+    ], Grid.prototype, "fingerprint", void 0);
+    tslib_1.__decorate([
         convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.number()),
         convector_core_model_1.Default(0)

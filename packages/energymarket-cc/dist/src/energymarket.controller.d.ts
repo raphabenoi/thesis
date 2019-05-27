@@ -25,7 +25,7 @@ export declare class EnergymarketController extends ConvectorController<Chaincod
     getAllAsks(): Promise<Ask[]>;
     getAskById(askId: string): Promise<Ask>;
     getAsksByAuctionId(auctionId: string): Promise<Ask[]>;
-    sendReading(reading: FlatConvectorModel<SmartMeterReading>, participantId: string): Promise<MarketParticipant>;
+    sendReading(reading: FlatConvectorModel<SmartMeterReading>): Promise<MarketParticipant>;
     clearAuction(auctionId: string): Promise<Auction>;
     escrowAuction(auctionId: string): Promise<{
         participants: MarketParticipant[];

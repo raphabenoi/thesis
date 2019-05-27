@@ -8,6 +8,7 @@ var ParticipantType;
     ParticipantType["producer"] = "producer";
     ParticipantType["consumer"] = "consumer";
     ParticipantType["prosumer"] = "prosumer";
+    ParticipantType["lmo"] = "lmo";
 })(ParticipantType = exports.ParticipantType || (exports.ParticipantType = {}));
 var SmartMeterReading = (function (_super) {
     tslib_1.__extends(SmartMeterReading, _super);
@@ -48,9 +49,8 @@ var MarketParticipant = (function (_super) {
         convector_core_model_1.Required()
     ], MarketParticipant.prototype, "type", void 0);
     tslib_1.__decorate([
-        convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string())
-    ], MarketParticipant.prototype, "name", void 0);
+    ], MarketParticipant.prototype, "fingerprint", void 0);
     tslib_1.__decorate([
         convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string().oneOf(Object.keys(ParticipantType).map(function (k) { return ParticipantType[k]; })))
