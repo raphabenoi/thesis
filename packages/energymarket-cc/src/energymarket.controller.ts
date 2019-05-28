@@ -123,10 +123,9 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     @Param(Market)
     market: Market
     ) {
-    /** 
-     * @todo Make sure no other 'Market' instance exists 
-     * @todo Restrict creation of this instance to 'LocalMarketOperator' admin
-    */
+    /** Saves the fingerprint (identity) of the invoking party (Local Market Operator) */
+    market.fingerprint = this.sender;
+
     await market.save();
   }
 
@@ -466,6 +465,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     auctionId: string
     ):Promise<Auction> {
 
+    /** Get the private details of the bids and asks from the transient field of the transaction */
     const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
     const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
     
@@ -492,20 +492,8 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
         }
       }));
 
+      /** Merge the public and the private part of the bids to a new array of 'FullBid' */
       const bids = new Array<FullBid>();
-      // for(const bid of publicBids) {
-      //   const bidPrivateDetails = await BidPrivateDetails.getOne(bid.id, BidPrivateDetails, {
-      //     privateCollection: bid.sender
-      //   });
-      //   const mergedBid = new FullBid({
-      //     id: bid.id,
-      //     auctionId: bid.auctionId,
-      //     sender: bid.sender,
-      //     amount: bidPrivateDetails.amount,
-      //     price: bidPrivateDetails.price
-      //   });
-      //   bids.push(mergedBid);
-      // }
       for(const bid of publicBids) {
         const bidPrivateDetails = privateBids.find(b => b.id === bid.id)
         const mergedBid = new FullBid({
@@ -527,20 +515,8 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
         }
       }));
 
+      /** Merge the public and the private part of the asks to a new array of 'FullAsk' */
       const asks = new Array<FullAsk>();
-      // for(const ask of publicAsks) {
-      //   const askPrivateDetails = await AskPrivateDetails.getOne(ask.id, AskPrivateDetails, {
-      //     privateCollection: ask.sender
-      //   });
-      //   const mergedAsk = new FullAsk({
-      //     id: ask.id,
-      //     auctionId: ask.auctionId,
-      //     sender: ask.sender,
-      //     amount: askPrivateDetails.amount,
-      //     price: askPrivateDetails.price
-      //   });
-      //   asks.push(mergedAsk);
-      // }
       for(const ask of publicAsks) {
         const askPrivateDetails = privateAsks.find(a => a.id === ask.id)
         const mergedAsk = new FullAsk({
@@ -723,6 +699,10 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     auctionId: string
   ) {
 
+    /** Get the private details of the bids and asks from the transient field of the transaction */
+    const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
+    const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
+
     /** Get the 'Auction' instance on which the sender is askding */
     const auction = await Auction.getOne(auctionId);
 
@@ -750,9 +730,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
 
     const successfulBids = new Array<FullBid>();
       for(const bid of publicBids) {
-        const bidPrivateDetails = await BidPrivateDetails.getOne(bid.id, BidPrivateDetails, {
-          privateCollection: bid.sender
-        });
+        const bidPrivateDetails = privateBids.find(b => b.id === bid.id);
         const mergedBid = new FullBid({
           id: bid.id,
           auctionId: bid.auctionId,
@@ -775,9 +753,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     }));
     const successfulAsks = new Array<FullAsk>();
       for(const ask of publicAsks) {
-        const askPrivateDetails = await AskPrivateDetails.getOne(ask.id, AskPrivateDetails, {
-          privateCollection: ask.sender
-        });
+        const askPrivateDetails = privateAsks.find(a => a.id === ask.id);
         const mergedAsk = new FullAsk({
           id: ask.id,
           auctionId: ask.auctionId,
@@ -908,8 +884,12 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
       market.energyBalance -= market.energyBalance;
     }
 
+    /** Change auction status to 'escrowed' */
+    auction.status = AuctionStatus.escrowed;
+
     /** Save the changed participants, market and grid */
     Promise.all(participants.map(participant => participant.save()));
+    await auction.save();
     await market.save();
     await grid.save();
     

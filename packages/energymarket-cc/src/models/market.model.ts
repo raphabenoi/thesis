@@ -39,4 +39,8 @@ export class Market extends ConvectorModel<Market> {
   @Required()
   @Validate(yup.number())
   public gridSellPrice: number;
+
+   /**  Fingerprint (similar to public key) of the Local Market Operator */
+   @Validate(yup.string())
+   public fingerprint: string;
 }

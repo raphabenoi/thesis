@@ -6,4 +6,5 @@ export declare class Market extends ConvectorModel<Market> {
     energyBalance: number;
     gridBuyPrice: number;
     gridSellPrice: number;
+    fingerprint: string;
 }
