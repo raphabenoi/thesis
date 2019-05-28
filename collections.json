@@ -5,7 +5,7 @@
       "requiredPeerCount": 0,
       "maxPeerCount": 3,
       "blockToLive": 100000000,
-      "memberOnlyRead": true
+      "memberOnlyRead": false
     },
     {
       "name": "PAR_org4",
@@ -13,6 +13,6 @@
       "requiredPeerCount": 0,
       "maxPeerCount": 3,
       "blockToLive": 100000000,
-      "memberOnlyRead": true
+      "memberOnlyRead": false
     }
 ]

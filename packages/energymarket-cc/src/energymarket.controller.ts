@@ -466,6 +466,9 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     auctionId: string
     ):Promise<Auction> {
 
+    const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
+    const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
+    
     /** Get the 'Auction' instance on which the sender is askding */
     const auction = await Auction.getOne(auctionId);
     
@@ -490,10 +493,21 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
       }));
 
       const bids = new Array<FullBid>();
+      // for(const bid of publicBids) {
+      //   const bidPrivateDetails = await BidPrivateDetails.getOne(bid.id, BidPrivateDetails, {
+      //     privateCollection: bid.sender
+      //   });
+      //   const mergedBid = new FullBid({
+      //     id: bid.id,
+      //     auctionId: bid.auctionId,
+      //     sender: bid.sender,
+      //     amount: bidPrivateDetails.amount,
+      //     price: bidPrivateDetails.price
+      //   });
+      //   bids.push(mergedBid);
+      // }
       for(const bid of publicBids) {
-        const bidPrivateDetails = await BidPrivateDetails.getOne(bid.id, BidPrivateDetails, {
-          privateCollection: bid.sender
-        });
+        const bidPrivateDetails = privateBids.find(b => b.id === bid.id)
         const mergedBid = new FullBid({
           id: bid.id,
           auctionId: bid.auctionId,
@@ -514,10 +528,21 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
       }));
 
       const asks = new Array<FullAsk>();
+      // for(const ask of publicAsks) {
+      //   const askPrivateDetails = await AskPrivateDetails.getOne(ask.id, AskPrivateDetails, {
+      //     privateCollection: ask.sender
+      //   });
+      //   const mergedAsk = new FullAsk({
+      //     id: ask.id,
+      //     auctionId: ask.auctionId,
+      //     sender: ask.sender,
+      //     amount: askPrivateDetails.amount,
+      //     price: askPrivateDetails.price
+      //   });
+      //   asks.push(mergedAsk);
+      // }
       for(const ask of publicAsks) {
-        const askPrivateDetails = await AskPrivateDetails.getOne(ask.id, AskPrivateDetails, {
-          privateCollection: ask.sender
-        });
+        const askPrivateDetails = privateAsks.find(a => a.id === ask.id)
         const mergedAsk = new FullAsk({
           id: ask.id,
           auctionId: ask.auctionId,
@@ -527,7 +552,6 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
         });
         asks.push(mergedAsk);
       }
-
 
       /** Go through all bids and asks and find the lowest price */
       let lowestPrice = [...bids, ...asks].reduce(function (acc, element) {

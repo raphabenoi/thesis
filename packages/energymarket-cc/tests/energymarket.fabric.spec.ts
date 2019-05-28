@@ -18,6 +18,7 @@ import { MarketParticipant, ParticipantType, SmartMeterReading } from '../src/mo
 import { ENGINE_METHOD_ALL } from 'constants';
 //import { debug } from 'util';
 import { read, access } from 'fs';
+import { stringify } from 'querystring';
 // import { parentPort } from 'worker_threads';
 
 describe('Energymarket', () => {
@@ -115,7 +116,7 @@ describe('Energymarket', () => {
       is: ParticipantType.lmo,
     });
     console.log(`creating Local Market Operator: ${lmo.toJSON()} `);
-    await energymarketCtrl.org1.createMarketParticipant(lmo);
+    await energymarketCtrl.org1.createMarketParticipant(lmo).catch(ex => ex.responses[0].error.message);
 
     const grid = new Grid({
       id: "GRID",
@@ -123,19 +124,19 @@ describe('Energymarket', () => {
       gridSellPrice: 5
     })
     console.log(`creating Public Grid: ${grid.toJSON()} `);
-    await energymarketCtrl.org2.createGrid(grid);
+    await energymarketCtrl.org2.createGrid(grid).catch(ex => ex.responses[0].error.message);
 
     for(let i=3; i<=(numberOfOrganisations); i++){
       const marketParticipant = new MarketParticipant({
         id: "PAR_" + identityOrg[i-1],
         is: ParticipantType.prosumer
       });
-      await energymarketCtrl['org' + i].createMarketParticipant(marketParticipant);
+      await energymarketCtrl['org' + i].createMarketParticipant(marketParticipant).catch(ex => ex.responses[0].error.message);
     }
 
-    let savedLMO = await energymarketCtrl.org1.getMarketParticipantById(lmo.id).then(lmo => new MarketParticipant(lmo));
-    let savedGRID = await energymarketCtrl.org2.getAllGrids().then(grid => new Grid(grid[0]));
-    let savedPAR = await energymarketCtrl.org3.getAllMarketParticipants().then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
+    let savedLMO = await energymarketCtrl.org1.getMarketParticipantById(lmo.id).catch(ex => ex.responses[0].error.message).then(lmo => new MarketParticipant(lmo));
+    let savedGRID = await energymarketCtrl.org2.getAllGrids().catch(ex => ex.responses[0].error.message).then(grid => new Grid(grid[0]));
+    let savedPAR = await energymarketCtrl.org3.getAllMarketParticipants().catch(ex => ex.responses[0].error.message).then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
 
     fingerprint.lmo = savedLMO.fingerprint;
     fingerprint.grid = savedGRID.fingerprint;
@@ -326,14 +327,14 @@ describe('Energymarket', () => {
       end: (Date.now() + 1000000),
     });
     await energymarketCtrl.org1.createAuction(auction).catch(ex => ex.responses[0].error.message);
-    let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id).then(auction => new Auction(auction));
+    let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id).catch(ex => ex.responses[0].error.message).then(auction => new Auction(auction));
     expect(savedAuction.id).to.eql(auction.id);
   });
 
   it('should place bids and ask from different participants', async () => {
 
     /** get the first auction from the ledger */
-    const auction = await energymarketCtrl.org1.getAllAuctions().then(auctions => auctions.map(auction => new Auction(auction))[0]);
+    const auction = await energymarketCtrl.org1.getAllAuctions().catch(ex => ex.responses[0].error.message).then(auctions => auctions.map(auction => new Auction(auction))[0]);
 
     let numberOfBids = numberOfOrganisations - 2;
     // let bids = new Array<FullBid>(numberOfBids);
@@ -352,7 +353,8 @@ describe('Energymarket', () => {
       /** use the controller which matches with 'bid.sender' */
       await energymarketCtrl[bid.sender.substring(4,)]      //[Object.keys(fingerprint).find(key => fingerprint[key] === bid.sender)]
         .$config({transient: { bid: bid.toJSON() }})
-        .placeBid();
+        .placeBid()
+        .catch(ex => ex.responses[0].error.message);
     }
 
     
@@ -364,13 +366,14 @@ describe('Energymarket', () => {
         auctionId: auction.id, 
         amount: Math.floor(Math.random() * 100) + 1, 
         price: Math.floor(Math.random() * 20) + 5,
-        sender: fingerprint['org' + (i+3)]
+        sender: 'PAR_org' + (i+3)
       });
     }
     for (const ask of asks) { 
       await energymarketCtrl[ask.sender.substring(4,)]
         .$config({transient: { ask: ask.toJSON() }})
-        .placeAsk();
+        .placeAsk()
+        .catch(ex => ex.responses[0].error.message);
     };
 
     let placedBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
@@ -382,7 +385,12 @@ describe('Energymarket', () => {
     placedAsks.forEach( (ask, iterator) => expect(ask.id).to.eql(asks[iterator]) );
 
     /** Clear the auction */
-    const clearedAuction = await energymarketCtrl.org1.clearAuction(auction.id).catch(ex => ex.responses[0].error.message);
+    const bidPrivateDetails = bids.map(bid => new BidPrivateDetails({id: bid.id, price: bid.price, amount: bid.amount}));
+    const askPrivateDetails = asks.map(ask => new AskPrivateDetails({id: ask.id, price: ask.price, amount: ask.amount}));
+    const clearedAuction = await energymarketCtrl.org1
+    .$config({transient: { bids: JSON.stringify(bidPrivateDetails) , asks: JSON.stringify(askPrivateDetails) }})
+    .clearAuction(auction.id)
+    .catch(ex => ex.responses[0].error.message);
     expect(clearedAuction.mcp).to.exist;
     
     let successfulBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
@@ -441,7 +449,7 @@ describe('Energymarket', () => {
   it('send smart meter reading for all market participants', async () => {
 
     /** get the first auction from the ledger */
-    const auction = await energymarketCtrl.org1.getAllAuctions().then(auctions => auctions.map(auction => new Auction(auction))[0]);
+    const auction = await energymarketCtrl.org1.getAllAuctions().catch(ex => ex.responses[0].error.message).then(auctions => auctions.map(auction => new Auction(auction))[0]);
 
     let numberOfReadings = numberOfOrganisations - 2;
     let readings = new Array<SmartMeterReading>(numberOfReadings);
@@ -454,12 +462,12 @@ describe('Energymarket', () => {
         consumed: bidAmount + Math.floor(Math.random() * bidAmount/10) - Math.floor(Math.random() * bidAmount/10),
         produced: askAmount + Math.floor(Math.random() * askAmount/10) - Math.floor(Math.random() * askAmount/10)
       });
-
-      for (let i=3; i<=numberOfOrganisations; i++) { await energymarketCtrl['org' + i].sendReading(readings[i-3]); }
-
-      let savedPAR = await energymarketCtrl.org1.getAllMarketParticipants().then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
-      savedPAR.forEach(participant => expect(participant.readings).to.be.an('array').lengthOf(1));
     }
+
+    for (let i=3; i<=numberOfOrganisations; i++) { await energymarketCtrl['org' + i].sendReading(readings[i-3]).catch(ex => ex.responses[0].error.message); }
+
+    let savedPAR = await energymarketCtrl.org1.getAllMarketParticipants().catch(ex => ex.responses[0].error.message).then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
+    savedPAR.forEach(participant => expect(participant.readings).to.be.an('array').lengthOf(1));
 
   });
 
@@ -467,11 +475,11 @@ describe('Energymarket', () => {
   it('send smart meter reading for all market participants', async () => {
 
     /** get the first auction from the ledger */
-    const auction = await energymarketCtrl.org1.getAllAuctions().then(auctions => auctions.map(auction => new Auction(auction))[0]);
+    const auction = await energymarketCtrl.org1.getAllAuctions().catch(ex => ex.responses[0].error.message).then(auctions => auctions.map(auction => new Auction(auction))[0]);
 
     await energymarketCtrl.org1.escrowAuction(auction.id).catch(ex => ex.responses[0].error.message);
     
-    let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id);
+    let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id).catch(ex => ex.responses[0].error.message);
     console.log(savedAuction);
     // let savedMarket= await adapter.getById<Market>('MKT');
     // console.log(savedMarket);
@@ -502,7 +510,7 @@ describe('Energymarket', () => {
     let successfulAsks = await energymarketCtrl.org1.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
     successfulAsks = successfulAsks.filter(ask => ask.successful == true);
 
-    let savedPAR = await energymarketCtrl.org1.getAllMarketParticipants().then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
+    let savedPAR = await energymarketCtrl.org1.getAllMarketParticipants().catch(ex => ex.responses[0].error.message).then(participants => participants.map(p => new MarketParticipant(p)).filter(p => p.id !== 'LMO'));
 
     // fullSuccessfulBids = new Array<FullBid>();
     // for(const successfulBid of successfulBids) {
