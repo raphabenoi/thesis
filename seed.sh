@@ -12,7 +12,7 @@ hurl invoke energymarket energymarket_createMarket "{\"id\":\"MKT\",\"auctionTim
 
 
 # Test it using the unit test under /packages/energymarket-cc/tests
-npm run test
+#npm run test
 
 
 # echo "Registering the GRID instance as ORG 2"
