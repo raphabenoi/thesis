@@ -704,7 +704,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
 
     /** Get the 'Auction' instance on which the sender is askding */
-    const auction = await Auction.getOne(auctionId);
+    const auction = await Auction.getOne(auctionId);  
 
     /** Get the 'Grid' instance in order to access grid prices
      * @todo Make this dynamic? */
