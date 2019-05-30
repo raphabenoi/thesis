@@ -19,8 +19,9 @@ export class FullBid extends ConvectorModel<FullBid> {
   @Validate(yup.string())
   public readonly auctionId: string;
   
-  /** The public key of the bidder. Not @Readonly() or @Required()  becuase it gets 
-   * overwritten when calling placeBid() to prevent inputting wrong sender fingerprint */
+  /** The 'id' of the bidder */
+  @ReadOnly()
+  @Required()
   @Validate(yup.string())
   public sender: string;
 
@@ -57,8 +58,9 @@ export class Bid extends ConvectorModel<Bid> {
   @Validate(yup.string())
   public readonly auctionId: string;
   
-  /** The public key of the bidder. Not @Readonly() or @Required()  becuase it gets 
-   * overwritten when calling placeBid() to prevent inputting wrong sender fingerprint */
+  /** The 'id' of the bidder */
+  @ReadOnly()
+  @Required()
   @Validate(yup.string())
   public sender: string;
 

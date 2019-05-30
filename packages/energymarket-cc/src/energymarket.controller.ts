@@ -177,39 +177,16 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   /** Transaction that places a new bid */
   @Create('Bid')
   @Invokable()
-  public async placeBid():Promise<any> {
+  public async sendBidPrivateDetails():Promise<any> {
     
     /** Retrieve the data from transaction that was sent in the transient field */
     const bid = await this.tx.getTransientValue<FullBid>('bid', FullBid);
 
-    /** Get the participant which is sending the transaction and which wants to place a bid */
-    // let participant = <MarketParticipant>(await MarketParticipant.query(MarketParticipant, {
-    //   "selector": {
-    //     "type": "de.rli.hypenergy.marketParticipant",
-    //     "fingerprint": this.sender
-    //   }
-    // }));
+    /** Get the participant which is on the bid as 'sender' */
+    const participant = await MarketParticipant.getOne(bid.sender);
 
-    let participant = await MarketParticipant.getAll().then(participants => participants.find(participant => participant.fingerprint === this.sender));
-
-    console.log('participant.fingerprint:' + participant.fingerprint);
-    console.log('participant.id:' + participant.id);
-    console.log('this.sender:' + this.sender);
-    console.log('bid.sender:' + bid.sender);
-
-    if(participant.id !== bid.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be '${participant.id}'. But 'bid.sender' was '${bid.sender}'`)}
-
-    /** Create new Bid with the information that should be publicly visible */
-    const publicBid = new Bid({
-      id: bid.id,
-      auctionId: bid.auctionId,
-      /** @todo switch the 2 lines below, so that the bid's sender is automatically determined by the chaincode */
-      sender: bid.sender 
-      //sender: this.sender
-    });
-
-    /** Save new bid to the public state */
-    await publicBid.save();
+    /** Check if party invoking the transaction is allowed to place a bid */
+    if(!participant || participant.fingerprint !== this.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be '${participant.id}'. But 'bid.sender' was '${bid.sender}'`)}
 
     /** Create new model which stores the bid's private details */
     const privateBid = new BidPrivateDetails({
@@ -220,59 +197,40 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
 
     /** Store the private bid details in the according private data collection */
     await privateBid.save({privateCollection: bid.sender});
-
-    /** return the public bid details */
-    return publicBid.toJSON();
-
-    /** For testing purposes the placed bit is immediatly saved
-     * @todo Remove next 2 lines when going into production
-     */
-    // bid.sender = this.sender;
-    // await bid.save();
-    // return bid;
-    
-    // /** Get the 'Auction' instance on which the sender is bidding */
-    // const auction = await Auction.getOne(bid.auctionId);
-    // const txTimestamp = this.tx.stub.getTxDate().getTime();
-
-    // /** Check if 'Auction' is still 'OPEN' for new bids */
-    // if (txTimestamp >= auction.end) {
-    //   /** If it is the first bid after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
-    //   if(auction.status === "open") {
-    //     auction.status = AuctionStatus.closed;
-    //     await auction.save();
-    //   }
-
-    //   throw new Error("The auction is already closed and does not accept new bids")
-    // }
-
-    // /** If 'Auction' still 'OPEN' save the bid */
-    // if (txTimestamp < auction.end) {
-    //   /** Get the 'MarketParticipant' invoking this transaction */
-    //   const bidder = await MarketParticipant.getOne(this.sender);
-
-    //   /** Check if bidder has enough coins plus a buffer of 10€
-    //    * @todo Make the buffer a variable. Maybe store it in the 'Market'
-    //    * @todo Change buffer to -1000 !!!
-    //    */
-    //   if ((bidder.coinBalance + 1000) < (bid.amount * bid.price)) {
-    //     throw new Error("Bidder does not have enough coins to place this bid")
-    //   } else {
-    //     /** Freeze the coins relative to the bid size */
-    //     bidder.coinBalance -= (bid.amount * bid.price);
-    //     bidder.frozenCoins += (bid.amount * bid.price);
-
-    //     /** Adds (or overwrites) the sender of the bid as the identity invoking the transaction */
-    //     bid.sender = this.sender;
-    //   }
-
-    //   /** Update bidder and save the newly placed bid */
-    //   await bidder.save();
-    //   await bid.save();
-    //   return bid;
-    // }
   
   }
+
+  /** Transaction that places a new bid */
+  @Create('Bid')
+  @Invokable()
+  public async placeBid(
+    @Param(Bid)
+    bid: Bid
+  ):Promise<any> {
+    /** Get the market participant which is on the bid */
+    const bidder = await MarketParticipant.getOne(bid.sender);
+    /** Check if party invoking the transaction is allowed to place a bid */
+    if(!bidder || bidder.fingerprint !== this.sender){ throw new Error(`Bid sender and transaction sender do not match`) }
+
+    /** Get the 'Auction' instance on which the sender is bidding */
+    const auction = await Auction.getOne(bid.auctionId);
+    const txTimestamp = this.tx.stub.getTxDate().getTime();
+
+    /** Check if 'Auction' is still 'OPEN' for new bids */
+    if (txTimestamp >= auction.end) {
+      /** If it is the first bid after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
+      if(auction.status === "open") {
+        auction.status = AuctionStatus.closed;
+        await auction.save();
+      }
+      throw new Error("The auction is already closed and does not accept new bids")
+    }
+
+    /** Save the new bid */
+    await bid.save();
+    return bid;
+  }
+  
 
   /** Gets all 'Bid' instances.
    * @todo Restrict the returned bids placed by the sender of this transaction
@@ -322,27 +280,16 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   /** Transaction that places a new ask */
   @Create('Ask')
   @Invokable()
-  public async placeAsk():Promise<any> {
-
+  public async sendAskPrivateDetails():Promise<any> {
+    
     /** Retrieve the data from transaction that was sent in the transient field */
     const ask = await this.tx.getTransientValue<FullAsk>('ask', FullAsk);
 
-    /** Get the participant which is sending the transaction and which wants to place an ask */
-    let participant = await MarketParticipant.getAll().then(participants => participants.find(participant => participant.fingerprint === this.sender));
+    /** Get the participant which is on the ask as 'sender' */
+    const participant = await MarketParticipant.getOne(ask.sender);
 
-    if(participant.id !== ask.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be '${participant.id}'. But 'bid.sender' was '${ask.sender}'`)}
-
-    /** Create new Ask with the information that should be publicly visible */
-    const publicAsk = new Ask({
-      id: ask.id,
-      auctionId: ask.auctionId,
-      /** @todo switch the 2 lines below, so that the ask's sender is automatically determined by the chaincode */
-      sender: ask.sender
-      //sender: this.sender
-    });
-
-    /** Save new ask to the public state */
-    await publicAsk.save();
+    /** Check if party invoking the transaction is allowed to place a ask */
+    if(!participant || participant.fingerprint !== this.sender){ throw new Error(`Fingerprints don't match. Expected 'participant.id' to be '${participant.id}'. But 'ask.sender' was '${ask.sender}'`)}
 
     /** Create new model which stores the ask's private details */
     const privateAsk = new AskPrivateDetails({
@@ -350,46 +297,41 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
       price: ask.price,
       amount: ask.amount
     });
-    
+
     /** Store the private ask details in the according private data collection */
     await privateAsk.save({privateCollection: ask.sender});
-    
-    /** return the public ask details */
-    return publicAsk.toJSON();
+  
+  }
 
+  /** Transaction that places a new ask */
+  @Create('Ask')
+  @Invokable()
+  public async placeAsk(
+    @Param(Ask)
+    ask: Ask
+  ):Promise<any> {
+    /** Get the market participant which is on the ask */
+    const askder = await MarketParticipant.getOne(ask.sender);
+    /** Check if party invoking the transaction is allowed to place a ask */
+    if(!askder || askder.fingerprint !== this.sender){ throw new Error(`Ask sender and transaction sender do not match`) }
 
-    // /** For testing purposes the placed ask is immediatly saved
-    //  * @todo Remove next 2 lines when going into production
-    //  */
-    // ask.sender = this.sender;
-    // await ask.save();
-    // return ask;
+    /** Get the 'Auction' instance on which the sender is askding */
+    const auction = await Auction.getOne(ask.auctionId);
+    const txTimestamp = this.tx.stub.getTxDate().getTime();
 
-    // /** Get the 'Auction' instance on which the sender is askding */
-    // const auction = await Auction.getOne(ask.auctionId);
-    // const txTimestamp = this.tx.stub.getTxDate().getTime();
-    
-    // /** Check if 'Auction' is still 'OPEN' for new asks */
-    // if (txTimestamp >= auction.end) {
+    /** Check if 'Auction' is still 'OPEN' for new asks */
+    if (txTimestamp >= auction.end) {
+      /** If it is the first ask after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
+      if(auction.status === "open") {
+        auction.status = AuctionStatus.closed;
+        await auction.save();
+      }
+      throw new Error("The auction is already closed and does not accept new asks")
+    }
 
-    //   /** If it is the first ask after the 'Auction' has ended it changes the 'status' to 'CLOSED' */
-    //   if(auction.status === "open") {
-    //     auction.status = AuctionStatus.closed;
-    //     await auction.save();
-    //   }
-
-    //   throw new Error("The auction is already closed and does not accept new asks")
-    // }
-
-    // /** If 'Auction' still 'OPEN' save the ask */
-    // if (txTimestamp < auction.end) {
-
-    //   /** Adds (or overwrites) the sender of the ask as the identity invoking the transaction */
-    //   ask.sender = this.sender;
-      
-    //   /** Save the newly placed ask */
-    //   await ask.save();
-    // }
+    /** Save the new ask */
+    await ask.save();
+    return ask;
   }
 
   /** Gets all 'Ask' instances.

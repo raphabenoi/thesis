@@ -20,6 +20,8 @@ var FullBid = (function (_super) {
         convector_core_model_1.Validate(yup.string())
     ], FullBid.prototype, "auctionId", void 0);
     tslib_1.__decorate([
+        convector_core_model_1.ReadOnly(),
+        convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string())
     ], FullBid.prototype, "sender", void 0);
     tslib_1.__decorate([
@@ -58,6 +60,8 @@ var Bid = (function (_super) {
         convector_core_model_1.Validate(yup.string())
     ], Bid.prototype, "auctionId", void 0);
     tslib_1.__decorate([
+        convector_core_model_1.ReadOnly(),
+        convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string())
     ], Bid.prototype, "sender", void 0);
     tslib_1.__decorate([

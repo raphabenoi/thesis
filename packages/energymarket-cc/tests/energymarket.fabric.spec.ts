@@ -182,10 +182,13 @@ describe('Energymarket', () => {
 
     /** place the bids as the "rightful" organisation */
     for(const bid of bids){
+      let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
+      await energymarketCtrl[bid.sender.substring(4,)].placeBid(publicBid);
+
       /** use the controller which matches with 'bid.sender' */
       await energymarketCtrl[bid.sender.substring(4,)]      //[Object.keys(fingerprint).find(key => fingerprint[key] === bid.sender)]
         .$config({transient: { bid: bid.toJSON() }})
-        .placeBid()
+        .sendBidPrivateDetails()
         .catch(ex => ex.responses[0].error.message);
     }
 
@@ -202,9 +205,12 @@ describe('Energymarket', () => {
       });
     }
     for (const ask of asks) { 
+      let publicAsk = new Ask({id: ask.id, auctionId: ask.auctionId, sender: ask.sender});
+      await energymarketCtrl[ask.sender.substring(4,)].placeAsk(publicAsk);
+
       await energymarketCtrl[ask.sender.substring(4,)]
         .$config({transient: { ask: ask.toJSON() }})
-        .placeAsk()
+        .sendAskPrivateDetails()
         .catch(ex => ex.responses[0].error.message);
     };
 
@@ -362,10 +368,13 @@ describe('Energymarket', () => {
 
       /** place the bids as the "rightful" organisation */
       for(const bid of bids){
+        let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
+        await energymarketCtrl[bid.sender.substring(4,)].placeBid(publicBid);
+
         /** use the controller which matches with 'bid.sender' */
         await energymarketCtrl[bid.sender.substring(4,)]      //[Object.keys(fingerprint).find(key => fingerprint[key] === bid.sender)]
           .$config({transient: { bid: bid.toJSON() }})
-          .placeBid()
+          .sendBidPrivateDetails()
           .catch(ex => ex.responses[0].error.message);
       }
 
@@ -382,9 +391,12 @@ describe('Energymarket', () => {
         });
       }
       for (const ask of asks) { 
+        let publicAsk = new Ask({id: ask.id, auctionId: ask.auctionId, sender: ask.sender});
+        await energymarketCtrl[ask.sender.substring(4,)].placeAsk(publicAsk);
+
         await energymarketCtrl[ask.sender.substring(4,)]
           .$config({transient: { ask: ask.toJSON() }})
-          .placeAsk()
+          .sendAskPrivateDetails()
           .catch(ex => ex.responses[0].error.message);
       };
 

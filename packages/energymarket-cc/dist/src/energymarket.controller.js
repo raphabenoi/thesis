@@ -147,42 +147,60 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.placeBid = function () {
+    EnergymarketController.prototype.sendBidPrivateDetails = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var bid, participant, publicBid, privateBid;
-            var _this = this;
+            var bid, participant, privateBid;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.tx.getTransientValue('bid', bid_model_1.FullBid)];
                     case 1:
                         bid = _a.sent();
-                        return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
+                        return [4, marketParticipant_model_1.MarketParticipant.getOne(bid.sender)];
                     case 2:
                         participant = _a.sent();
-                        console.log('participant.fingerprint:' + participant.fingerprint);
-                        console.log('participant.id:' + participant.id);
-                        console.log('this.sender:' + this.sender);
-                        console.log('bid.sender:' + bid.sender);
-                        if (participant.id !== bid.sender) {
+                        if (!participant || participant.fingerprint !== this.sender) {
                             throw new Error("Fingerprints don't match. Expected 'participant.id' to be '" + participant.id + "'. But 'bid.sender' was '" + bid.sender + "'");
                         }
-                        publicBid = new bid_model_1.Bid({
-                            id: bid.id,
-                            auctionId: bid.auctionId,
-                            sender: bid.sender
-                        });
-                        return [4, publicBid.save()];
-                    case 3:
-                        _a.sent();
                         privateBid = new bid_model_1.BidPrivateDetails({
                             id: bid.id,
                             price: bid.price,
                             amount: bid.amount
                         });
                         return [4, privateBid.save({ privateCollection: bid.sender })];
-                    case 4:
+                    case 3:
                         _a.sent();
-                        return [2, publicBid.toJSON()];
+                        return [2];
+                }
+            });
+        });
+    };
+    EnergymarketController.prototype.placeBid = function (bid) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var bidder, auction, txTimestamp;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(bid.sender)];
+                    case 1:
+                        bidder = _a.sent();
+                        if (!bidder || bidder.fingerprint !== this.sender) {
+                            throw new Error("Bid sender and transaction sender do not match");
+                        }
+                        return [4, auction_model_1.Auction.getOne(bid.auctionId)];
+                    case 2:
+                        auction = _a.sent();
+                        txTimestamp = this.tx.stub.getTxDate().getTime();
+                        if (!(txTimestamp >= auction.end)) return [3, 5];
+                        if (!(auction.status === "open")) return [3, 4];
+                        auction.status = auction_model_1.AuctionStatus.closed;
+                        return [4, auction.save()];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4: throw new Error("The auction is already closed and does not accept new bids");
+                    case 5: return [4, bid.save()];
+                    case 6:
+                        _a.sent();
+                        return [2, bid];
                 }
             });
         });
@@ -227,38 +245,60 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.placeAsk = function () {
+    EnergymarketController.prototype.sendAskPrivateDetails = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var ask, participant, publicAsk, privateAsk;
-            var _this = this;
+            var ask, participant, privateAsk;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.tx.getTransientValue('ask', ask_model_1.FullAsk)];
                     case 1:
                         ask = _a.sent();
-                        return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
+                        return [4, marketParticipant_model_1.MarketParticipant.getOne(ask.sender)];
                     case 2:
                         participant = _a.sent();
-                        if (participant.id !== ask.sender) {
-                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be '" + participant.id + "'. But 'bid.sender' was '" + ask.sender + "'");
+                        if (!participant || participant.fingerprint !== this.sender) {
+                            throw new Error("Fingerprints don't match. Expected 'participant.id' to be '" + participant.id + "'. But 'ask.sender' was '" + ask.sender + "'");
                         }
-                        publicAsk = new ask_model_1.Ask({
-                            id: ask.id,
-                            auctionId: ask.auctionId,
-                            sender: ask.sender
-                        });
-                        return [4, publicAsk.save()];
-                    case 3:
-                        _a.sent();
                         privateAsk = new ask_model_1.AskPrivateDetails({
                             id: ask.id,
                             price: ask.price,
                             amount: ask.amount
                         });
                         return [4, privateAsk.save({ privateCollection: ask.sender })];
-                    case 4:
+                    case 3:
                         _a.sent();
-                        return [2, publicAsk.toJSON()];
+                        return [2];
+                }
+            });
+        });
+    };
+    EnergymarketController.prototype.placeAsk = function (ask) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var askder, auction, txTimestamp;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(ask.sender)];
+                    case 1:
+                        askder = _a.sent();
+                        if (!askder || askder.fingerprint !== this.sender) {
+                            throw new Error("Ask sender and transaction sender do not match");
+                        }
+                        return [4, auction_model_1.Auction.getOne(ask.auctionId)];
+                    case 2:
+                        auction = _a.sent();
+                        txTimestamp = this.tx.stub.getTxDate().getTime();
+                        if (!(txTimestamp >= auction.end)) return [3, 5];
+                        if (!(auction.status === "open")) return [3, 4];
+                        auction.status = auction_model_1.AuctionStatus.closed;
+                        return [4, auction.save()];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4: throw new Error("The auction is already closed and does not accept new asks");
+                    case 5: return [4, ask.save()];
+                    case 6:
+                        _a.sent();
+                        return [2, ask];
                 }
             });
         });
@@ -937,6 +977,11 @@ var EnergymarketController = (function (_super) {
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Create('Bid'),
         convector_core_1.Invokable()
+    ], EnergymarketController.prototype, "sendBidPrivateDetails", null);
+    tslib_1.__decorate([
+        convector_rest_api_decorators_1.Create('Bid'),
+        convector_core_1.Invokable(),
+        tslib_1.__param(0, convector_core_1.Param(bid_model_1.Bid))
     ], EnergymarketController.prototype, "placeBid", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.GetAll('Bid'),
@@ -955,6 +1000,11 @@ var EnergymarketController = (function (_super) {
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Create('Ask'),
         convector_core_1.Invokable()
+    ], EnergymarketController.prototype, "sendAskPrivateDetails", null);
+    tslib_1.__decorate([
+        convector_rest_api_decorators_1.Create('Ask'),
+        convector_core_1.Invokable(),
+        tslib_1.__param(0, convector_core_1.Param(ask_model_1.Ask))
     ], EnergymarketController.prototype, "placeAsk", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.GetAll('Ask'),

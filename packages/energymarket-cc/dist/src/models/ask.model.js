@@ -20,6 +20,8 @@ var FullAsk = (function (_super) {
         convector_core_model_1.Validate(yup.string())
     ], FullAsk.prototype, "auctionId", void 0);
     tslib_1.__decorate([
+        convector_core_model_1.ReadOnly(),
+        convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string())
     ], FullAsk.prototype, "sender", void 0);
     tslib_1.__decorate([
@@ -58,6 +60,8 @@ var Ask = (function (_super) {
         convector_core_model_1.Validate(yup.string())
     ], Ask.prototype, "auctionId", void 0);
     tslib_1.__decorate([
+        convector_core_model_1.ReadOnly(),
+        convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string())
     ], Ask.prototype, "sender", void 0);
     tslib_1.__decorate([
