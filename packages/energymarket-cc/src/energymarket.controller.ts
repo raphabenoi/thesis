@@ -8,7 +8,8 @@ import {
   ConvectorController,
   Invokable,
   Param,
-  FlatConvectorModel
+  FlatConvectorModel,
+  ConvectorModel
 } from '@worldsibu/convector-core';
 
 /** Import all the model files */
@@ -27,7 +28,7 @@ import { toASCII } from 'punycode';
 import { debug } from 'util';
 import { read } from 'fs';
 
-@Controller('energymarket')
+@Controller('energymarket')   
 export class EnergymarketController extends ConvectorController<ChaincodeTx> {
 
   /*****************************************************************
@@ -682,7 +683,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
         });
         successfulBids.push(mergedBid);
       }
-
+    
 
 
     /** Get all asks related to the specified 'auctionId' */
@@ -842,111 +843,5 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
       grid: grid
     }
   }
-
-
-  
-  /*****************************************************************
-   * BUY FROM GRID FUNCTION  * * * * * * * * * * * * * * * * * * * *
-   *****************************************************************/
-
-   /** Transaction that transfers coins from one participant to the 'PUBLICGRID' 
-    * @todo Make it a private transaction only invokable by the Escrow function
-   */
-  @Service()
-  @Invokable()
-  public async buyFromGrid(
-    @Param(yup.string())
-    buyerId: string,
-    @Param(yup.number())
-    amount: number
-    ) {
-    /** Get the 2 relevant 'MarketParticipants' */
-    const buyer = await MarketParticipant.getOne(buyerId);
-    const grid = await Grid.getOne('GRID');
-
-    if (!buyer.id) {
-      throw new Error(`Source participant ${buyer} doesn't exist`);
-    }
-    
-    if (!grid.id) {
-      throw new Error(`Grid instance doesn't exist`);
-    }
-
-    /** @remark since the escrow function will be calling this it is not possible to check it like this! */
-    /**
-     if (fromParticipant.id != this.sender) {
-       throw new Error(`Permission denied! Only the owner can transfer coins`)
-    }
-    */
-
-    /** @todo should not be possible for participants to invoke this transaction outisde the escrow function */
-    if(buyer.coinBalance < amount || buyer.frozenCoins < amount) {
-      throw new Error(`Participant ${buyer} doesn't have enough coins`)
-    }
-
-    buyer.coinBalance -= amount * grid.gridBuyPrice;
-    buyer.energyBalance += amount;
-    grid.coinBalance += amount * grid.gridBuyPrice;
-    grid.energyBalance -= amount;
-
-    return {
-      buyer: buyer, 
-      grid: grid
-    }
- }
-
-
-
-  /*****************************************************************
-   * TRANSFER FUNCTION * * * * * * * * * * * * * * * * * * * * * * *
-   *****************************************************************/
-
-   /** Transaction that transfers coins from one participant to the other 
-    * @todo Maybe make it a private transaction only invokable by the Escrow function
-   */
-   @Service()
-   @Invokable()
-   public async transferCoins(
-    @Param(yup.string())
-    from: string,
-    @Param(yup.string())
-    to: string,
-    @Param(yup.number())
-    amount: number
-    ) {
-    /** Get the 2 relevant 'MarketParticipants' */
-    const fromParticipant = await MarketParticipant.getOne(from);
-    const toParticipant = await MarketParticipant.getOne(to);
-
-    if (!fromParticipant.id) {
-      throw new Error(`Source participant ${from} doesn't exist`);
-    }
-    
-    if (!toParticipant.id) {
-      throw new Error(`Destination participant ${to} doesn't exist`);
-    }
-
-    /** @remark since the escrow function will be calling this it is not possible to check it like this! */
-    /**
-    if (fromParticipant.id != this.sender) {
-      throw new Error(`Permission denied! Only the owner can transfer coins`)
-    }
-    */
-
-    /** @todo should not be possible for participants to invoke this transaction outisde the escrow function */
-    if(fromParticipant.coinBalance < amount || fromParticipant.frozenCoins < amount) {
-      throw new Error(`Participant ${from} doesn't have enough coins`)
-    }
-
-    fromParticipant.coinBalance -= amount;
-    toParticipant.coinBalance += amount;
-
-    await Promise.all([fromParticipant.save(), toParticipant.save()]);
-  }
-
-
-
-
-
 
 }
