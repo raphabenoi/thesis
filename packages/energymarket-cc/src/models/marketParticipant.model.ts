@@ -56,6 +56,10 @@ export class MarketParticipant extends ConvectorModel<MarketParticipant> {
   @Validate(yup.string())
   public fingerprint: string;
 
+  /**  Membership Service Provider related to this marketParticipant */
+  @Validate(yup.string()) 
+  public msp: string;
+
   /** What type of market participant */
   @Required()
   @Validate(yup.string().oneOf(Object.keys(ParticipantType).map(k => ParticipantType[k])))
@@ -66,12 +70,6 @@ export class MarketParticipant extends ConvectorModel<MarketParticipant> {
   @Validate(yup.number())
   @Default(0)
   public coinBalance: number;
-
-  /** Frozen coins cannot be accessed by 'MarketParticipant' and only managed by chaincode */
-  @Required()
-  @Validate(yup.number())
-  @Default(0)
-  public frozenCoins: number;
 
   /** Energy balance in kWh where + = production and - = consumption */
   @Required()
