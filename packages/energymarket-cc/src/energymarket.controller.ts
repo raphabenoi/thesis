@@ -3,6 +3,9 @@ import { ChaincodeTx } from '@worldsibu/convector-platform-fabric';
 /** yup helps checking types */
 import * as yup from 'yup';
 
+/** sha is used for hashing */
+import { sha1 } from 'sha1';
+
 import {
   Controller,
   ConvectorController,
@@ -455,12 +458,17 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
   public async clearAuction(
     @Param(yup.string())
     auctionId: string
-    ):Promise<Auction> {
+    ) {
 
     /** Get the private details of the bids and asks from the transient field of the transaction */
     const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
     const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
     
+    /** Hash the input data to verify it's valitidy */
+    const privateBidsHashes = privateBids.map( bid => sha1(bid));
+    const privateAsksHashes = privateAsks.map( ask => sha1(ask));
+
+
     /** Get the 'Auction' instance on which the sender is askding */
     const auction = await Auction.getOne(auctionId);
     
@@ -662,7 +670,7 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
           
           /** Save the updated 'Auction' instance */
           auction.save();
-          return auction;
+          return [auction, 123];
         }
       }
       /** If no match could be found (no asks or no intersection) set MCP = -1 (serves as check later)
@@ -674,7 +682,7 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
       auction.unmatchedDemand = demandCurve[lowestPrice] - auction.matchedAmount;
       auction.unmatchedSupply = supplyCurve[highestPrice] - auction.matchedAmount;
       auction.save();
-      return auction;
+      return {auction, privateBidsHashes, privateAsksHashes};
     }
   }
 

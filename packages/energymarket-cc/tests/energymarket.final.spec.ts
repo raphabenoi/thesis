@@ -298,6 +298,8 @@ describe('CHAINCODE TEST SERIES', () => {
     expect(savedPAR.readings).to.be.an('array').lengthOf(1);
   });
 
+  it('UNIT TEST 4: 4 market participants each place 2 oders, the market is cleared, readings sumbitted, and market settled')
+
 
   it('should place bids and ask from different participants', async () => {
 

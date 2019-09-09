@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var yup = require("yup");
+var sha1_1 = require("sha1");
 var convector_core_1 = require("@worldsibu/convector-core");
 var ask_model_1 = require("./models/ask.model");
 var auction_model_1 = require("./models/auction.model");
@@ -245,6 +246,33 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
+    EnergymarketController.prototype.getBidPrivateDetails = function (bidId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var bid, bidder, bidPrivateDetails;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, bid_model_1.Bid.getOne(bidId)];
+                    case 1:
+                        bid = _a.sent();
+                        return [4, marketParticipant_model_1.MarketParticipant.getOne(bid.sender)];
+                    case 2:
+                        bidder = _a.sent();
+                        if (!bidder || bidder.fingerprint !== this.sender) {
+                            throw new Error("Bid sender and transaction sender do not match. Only " + bid.sender + " is allowed to invoke this transaction.");
+                        }
+                        return [4, bid_model_1.BidPrivateDetails.getOne(bidId, bid_model_1.BidPrivateDetails, {
+                                privateCollection: bidder.id
+                            })];
+                    case 3:
+                        bidPrivateDetails = _a.sent();
+                        if (!bidPrivateDetails.id) {
+                            throw new Error("No bid private data with ID " + bidId);
+                        }
+                        return [2, bidPrivateDetails.toJSON()];
+                }
+            });
+        });
+    };
     EnergymarketController.prototype.sendAskPrivateDetails = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var ask, participant, privateAsk;
@@ -343,10 +371,37 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
+    EnergymarketController.prototype.getAskPrivateDetails = function (askId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var ask, bidder, askPrivateDetails;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, ask_model_1.Ask.getOne(askId)];
+                    case 1:
+                        ask = _a.sent();
+                        return [4, marketParticipant_model_1.MarketParticipant.getOne(ask.sender)];
+                    case 2:
+                        bidder = _a.sent();
+                        if (!bidder || bidder.fingerprint !== this.sender) {
+                            throw new Error("Bid sender and transaction sender do not match. Only " + ask.sender + " is allowed to invoke this transaction.");
+                        }
+                        return [4, ask_model_1.AskPrivateDetails.getOne(askId, ask_model_1.AskPrivateDetails, {
+                                privateCollection: bidder.id
+                            })];
+                    case 3:
+                        askPrivateDetails = _a.sent();
+                        if (!askPrivateDetails.id) {
+                            throw new Error("No ask private data with ID " + askId);
+                        }
+                        return [2, askPrivateDetails.toJSON()];
+                }
+            });
+        });
+    };
     EnergymarketController.prototype.sendReading = function (reading) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var participant;
             var _this = this;
+            var participant;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
@@ -363,7 +418,7 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.clearAuction = function (auctionId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var privateBids, privateAsks, auction, txTimestamp, publicBids, bids, _loop_1, _i, publicBids_1, bid, publicAsks, asks, _loop_2, _a, publicAsks_1, ask, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_3, out_i_1, i, state_1;
+            var privateBids, privateAsks, privateBidsHashes, privateAsksHashes, auction, txTimestamp, publicBids, bids, _loop_1, _i, publicBids_1, bid, publicAsks, asks, _loop_2, _a, publicAsks_1, ask, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_3, out_i_1, i, state_1;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0: return [4, this.tx.getTransientValue('bids', yup.array(bid_model_1.BidPrivateDetails.schema()))];
@@ -372,6 +427,8 @@ var EnergymarketController = (function (_super) {
                         return [4, this.tx.getTransientValue('asks', yup.array(ask_model_1.AskPrivateDetails.schema()))];
                     case 2:
                         privateAsks = _b.sent();
+                        privateBidsHashes = privateBids.map(function (bid) { return sha1_1.sha1(bid); });
+                        privateAsksHashes = privateAsks.map(function (ask) { return sha1_1.sha1(ask); });
                         return [4, auction_model_1.Auction.getOne(auctionId)];
                     case 3:
                         auction = _b.sent();
@@ -663,7 +720,7 @@ var EnergymarketController = (function (_super) {
                                         auction.unmatchedDemand = demandCurve_1[lowestPrice] - auction.matchedAmount;
                                         auction.unmatchedSupply = supplyCurve_1[highestPrice] - auction.matchedAmount;
                                         auction.save();
-                                        return [2, { value: auction }];
+                                        return [2, { value: [auction, 123] }];
                                     case 26:
                                         out_i_1 = i;
                                         return [2];
@@ -693,7 +750,7 @@ var EnergymarketController = (function (_super) {
                         auction.unmatchedDemand = demandCurve_1[lowestPrice] - auction.matchedAmount;
                         auction.unmatchedSupply = supplyCurve_1[highestPrice] - auction.matchedAmount;
                         auction.save();
-                        return [2, auction];
+                        return [2, { auction: auction, privateBidsHashes: privateBidsHashes, privateAsksHashes: privateAsksHashes }];
                     case 10: return [2];
                 }
             });
@@ -936,6 +993,11 @@ var EnergymarketController = (function (_super) {
         tslib_1.__param(0, convector_core_1.Param(yup.string()))
     ], EnergymarketController.prototype, "getBidsByAuctionId", null);
     tslib_1.__decorate([
+        convector_rest_api_decorators_1.GetById('Bid'),
+        convector_core_1.Invokable(),
+        tslib_1.__param(0, convector_core_1.Param(yup.string()))
+    ], EnergymarketController.prototype, "getBidPrivateDetails", null);
+    tslib_1.__decorate([
         convector_rest_api_decorators_1.Create('Ask'),
         convector_core_1.Invokable()
     ], EnergymarketController.prototype, "sendAskPrivateDetails", null);
@@ -958,6 +1020,11 @@ var EnergymarketController = (function (_super) {
         convector_core_1.Invokable(),
         tslib_1.__param(0, convector_core_1.Param(yup.string()))
     ], EnergymarketController.prototype, "getAsksByAuctionId", null);
+    tslib_1.__decorate([
+        convector_rest_api_decorators_1.GetById('Ask'),
+        convector_core_1.Invokable(),
+        tslib_1.__param(0, convector_core_1.Param(yup.string()))
+    ], EnergymarketController.prototype, "getAskPrivateDetails", null);
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Service(),
         convector_core_1.Invokable(),
