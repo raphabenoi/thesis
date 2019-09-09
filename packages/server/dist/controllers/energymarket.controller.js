@@ -453,7 +453,7 @@ router.post('/clearAuction/:id', function (req, res) { return tslib_1.__awaiter(
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 auctionId = req.params.auctionId;
-                return [4, convector_1.EnergymarketControllerBackEnd.escrowAuction(auctionId)];
+                return [4, convector_1.EnergymarketControllerBackEnd.settleAuction(auctionId)];
             case 1:
                 escrowedAuction = _a.sent();
                 res.status(201).send(JSON.stringify(escrowedAuction));

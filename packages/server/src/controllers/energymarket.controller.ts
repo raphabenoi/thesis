@@ -306,7 +306,7 @@ router.post('/smartMeter/:id', async (req: Request, res: Response) => {
 router.post('/clearAuction/:id', async (req: Request, res: Response) => {
     try {
         const { auctionId } = req.params;
-        const escrowedAuction = await EnergymarketControllerBackEnd.escrowAuction(auctionId);
+        const escrowedAuction = await EnergymarketControllerBackEnd.settleAuction(auctionId);
         res.status(201).send(JSON.stringify(escrowedAuction));
     } catch (err) {
         console.log(JSON.stringify(err));

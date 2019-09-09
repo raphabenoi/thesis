@@ -335,9 +335,9 @@ definitions:
            type: string
            example: a_text
 
-    escrowAuctionBody:
+    settleAuctionBody:
        type: object
-       title: escrowAuctionParams
+       title: settleAuctionParams
        required:
           - auctionId
        properties:
@@ -663,22 +663,22 @@ paths:
           description: clearAuction raised an exception
 
 
-  /escrowAuction:
+  /settleAuction:
     post:
       tags:
-        - escrowAuction
-      description: escrowAuction
+        - settleAuction
+      description: settleAuction
       parameters:
-        - name: escrowAuctionParams
+        - name: settleAuctionParams
           in: body
           required: true
           schema:
-            $ref: "#/definitions/escrowAuctionBody"
+            $ref: "#/definitions/settleAuctionBody"
       responses:
         200:
-          description: escrowAuction executed correctly
+          description: settleAuction executed correctly
         500:
-          description: escrowAuction raised an exception
+          description: settleAuction raised an exception
 
 
   /buyFromGrid:

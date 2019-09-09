@@ -52,6 +52,9 @@ var MarketParticipant = (function (_super) {
         convector_core_model_1.Validate(yup.string())
     ], MarketParticipant.prototype, "fingerprint", void 0);
     tslib_1.__decorate([
+        convector_core_model_1.Validate(yup.string())
+    ], MarketParticipant.prototype, "msp", void 0);
+    tslib_1.__decorate([
         convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.string().oneOf(Object.keys(ParticipantType).map(function (k) { return ParticipantType[k]; })))
     ], MarketParticipant.prototype, "is", void 0);
@@ -60,11 +63,6 @@ var MarketParticipant = (function (_super) {
         convector_core_model_1.Validate(yup.number()),
         convector_core_model_1.Default(0)
     ], MarketParticipant.prototype, "coinBalance", void 0);
-    tslib_1.__decorate([
-        convector_core_model_1.Required(),
-        convector_core_model_1.Validate(yup.number()),
-        convector_core_model_1.Default(0)
-    ], MarketParticipant.prototype, "frozenCoins", void 0);
     tslib_1.__decorate([
         convector_core_model_1.Required(),
         convector_core_model_1.Validate(yup.number()),

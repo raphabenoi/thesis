@@ -22,7 +22,7 @@ export default express.Router()
     .post('/getAsksByAuctionId', controller.energymarket_getAsksByAuctionId)
     .post('/sendReading', controller.energymarket_sendReading)
     .post('/clearAuction', controller.energymarket_clearAuction)
-    .post('/escrowAuction', controller.energymarket_escrowAuction)
+    .post('/settleAuction', controller.energymarket_settleAuction)
     .post('/buyFromGrid', controller.energymarket_buyFromGrid)
     .post('/transferCoins', controller.energymarket_transferCoins)
 

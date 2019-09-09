@@ -10,7 +10,7 @@
     "seed": "./seed.sh",
     "install": "npm-run-all -s lerna:install",
     "build": "node ./update-paths.js",
-    "env:restart": "hurl new -o 4",
+    "env:restart": "hurl new -o 6",
     "server:start": "npx lerna run start:dev --scope server --stream",
     "test": "npm-run-all -s lerna:test",
     "env:clean": "hurl clean",

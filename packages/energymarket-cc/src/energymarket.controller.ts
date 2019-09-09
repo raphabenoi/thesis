@@ -29,7 +29,7 @@ import { debug } from 'util';
 import { read } from 'fs';
 
 @Controller('energymarket')   
-export class EnergymarketController extends ConvectorController<ChaincodeTx> {
+export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
 
   /*****************************************************************
    * FUNCTIONS REGARDING MARKET PARTICIPANTS * * * * * * * * * * * * 
@@ -244,9 +244,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     return storedBids;
   }
 
-  /** Gets 'Bid' with the passed 'id'
-   * @todo Restrict the invocktion of this function only to those where bid.sender == this.sender
-   */
+  /** Gets 'Bid' with the passed 'id' */
   @GetById('Bid')
   @Invokable()
   public async getBidById(
@@ -271,6 +269,31 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     const allBids = await Bid.getAll<Bid>();
     const bids = allBids.filter(bid => bid.auctionId === auctionId);
     return bids;
+  }
+
+  /** Gets a bid's private details by passing the bid's 'id' */
+  @GetById('Bid')
+  @Invokable()
+  public async getBidPrivateDetails(
+    @Param(yup.string())
+    bidId: string
+  )
+  {
+    const bid = await Bid.getOne(bidId);
+    /** Get the market participant which is on the bid */
+    const bidder = await MarketParticipant.getOne(bid.sender);
+    /** Check if party invoking the transaction is allowed to place a bid */
+    if(!bidder || bidder.fingerprint !== this.sender){ throw new Error(`Bid sender and transaction sender do not match. Only ${bid.sender} is allowed to invoke this transaction.`) }
+
+    let bidPrivateDetails = await BidPrivateDetails.getOne(bidId, BidPrivateDetails, {
+      privateCollection: bidder.id
+    });
+
+    if(!bidPrivateDetails.id) {
+      throw new Error(`No bid private data with ID ${bidId}`);
+    }
+    
+    return bidPrivateDetails.toJSON();
   }
 
 
@@ -373,6 +396,32 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     const allAsks = await Ask.getAll<Ask>();
     const asks = allAsks.filter(ask => ask.auctionId === auctionId);
     return asks;
+  }
+
+
+  /** Gets a asks's private details by passing the ask's 'id' */
+  @GetById('Ask')
+  @Invokable()
+  public async getAskPrivateDetails(
+    @Param(yup.string())
+    askId: string
+  )
+  {
+    const ask = await Ask.getOne(askId);
+    /** Get the market participant which is on the bid */
+    const bidder = await MarketParticipant.getOne(ask.sender);
+    /** Check if party invoking the transaction is allowed to place a bid */
+    if(!bidder || bidder.fingerprint !== this.sender){ throw new Error(`Bid sender and transaction sender do not match. Only ${ask.sender} is allowed to invoke this transaction.`) }
+
+    let askPrivateDetails = await AskPrivateDetails.getOne(askId, AskPrivateDetails, {
+      privateCollection: bidder.id
+    });
+
+    if(!askPrivateDetails.id) {
+      throw new Error(`No ask private data with ID ${askId}`);
+    }
+    
+    return askPrivateDetails.toJSON();
   }
 
   // /*****************************************************************
@@ -637,7 +686,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
   /** Transaction that clears the passed 'Auction' */
   @Service()
   @Invokable()
-  public async escrowAuction(
+  public async settleAuction(
     @Param(yup.string())
     auctionId: string
   ) {
@@ -730,9 +779,12 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
     }, 0);
     */
 
+    /** Iterate through all participants */
     for (const participant of participants) {
+      /** Find the smart meter reading for the auction period to be settled and store both consumption and production */
       let consumption = participant.readings.find(reading => reading.auctionPeriod == auction.id).consumed;
       let production = participant.readings.find(reading => reading.auctionPeriod == auction.id).produced;
+      /** Go through all successful bids of the given participant and accumulate the amount */
       let bidAmount = successfulBids.filter((bid) => bid.sender == participant.id).reduce((acc, bid) => {
         if (!bid.unmatchedAmount) {
           return acc + bid.amount
@@ -740,6 +792,7 @@ export class EnergymarketController extends ConvectorController<ChaincodeTx> {
           return acc + (bid.amount - bid.unmatchedAmount)
         }
       }, 0);
+      /** Go through all successful bids of the given participant and accumulate the amount */
       let askAmount = successfulAsks.filter((ask) => ask.sender == participant.id).reduce((acc, ask) => {
         if (!ask.unmatchedAmount) {
           return acc + ask.amount

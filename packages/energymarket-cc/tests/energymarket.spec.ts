@@ -408,7 +408,7 @@ describe('Energymarket', () => {
     // })
     // await energymarketCtrl.sendReading(reading2, participant2.id).catch(ex => ex.responses[0].error.message);
 
-    await energymarketCtrl.escrowAuction(auction.id).catch(ex => ex.responses[0].error.message);
+    await energymarketCtrl.settleAuction(auction.id).catch(ex => ex.responses[0].error.message);
     
     let savedAuction = await adapter.getById<Auction>(auction.id);
     console.log(savedAuction);

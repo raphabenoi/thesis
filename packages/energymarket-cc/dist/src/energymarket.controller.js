@@ -699,7 +699,7 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.escrowAuction = function (auctionId) {
+    EnergymarketController.prototype.settleAuction = function (auctionId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var privateBids, privateAsks, auction, grid, market, participants, publicBids, successfulBids, _loop_10, _i, publicBids_2, bid, publicAsks, successfulAsks, _loop_11, _a, publicAsks_2, ask, _loop_12, _b, participants_1, participant;
             return tslib_1.__generator(this, function (_c) {
@@ -866,68 +866,6 @@ var EnergymarketController = (function (_super) {
             });
         });
     };
-    EnergymarketController.prototype.buyFromGrid = function (buyerId, amount) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var buyer, grid;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(buyerId)];
-                    case 1:
-                        buyer = _a.sent();
-                        return [4, grid_model_1.Grid.getOne('GRID')];
-                    case 2:
-                        grid = _a.sent();
-                        if (!buyer.id) {
-                            throw new Error("Source participant " + buyer + " doesn't exist");
-                        }
-                        if (!grid.id) {
-                            throw new Error("Grid instance doesn't exist");
-                        }
-                        if (buyer.coinBalance < amount || buyer.frozenCoins < amount) {
-                            throw new Error("Participant " + buyer + " doesn't have enough coins");
-                        }
-                        buyer.coinBalance -= amount * grid.gridBuyPrice;
-                        buyer.energyBalance += amount;
-                        grid.coinBalance += amount * grid.gridBuyPrice;
-                        grid.energyBalance -= amount;
-                        return [2, {
-                                buyer: buyer,
-                                grid: grid
-                            }];
-                }
-            });
-        });
-    };
-    EnergymarketController.prototype.transferCoins = function (from, to, amount) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var fromParticipant, toParticipant;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne(from)];
-                    case 1:
-                        fromParticipant = _a.sent();
-                        return [4, marketParticipant_model_1.MarketParticipant.getOne(to)];
-                    case 2:
-                        toParticipant = _a.sent();
-                        if (!fromParticipant.id) {
-                            throw new Error("Source participant " + from + " doesn't exist");
-                        }
-                        if (!toParticipant.id) {
-                            throw new Error("Destination participant " + to + " doesn't exist");
-                        }
-                        if (fromParticipant.coinBalance < amount || fromParticipant.frozenCoins < amount) {
-                            throw new Error("Participant " + from + " doesn't have enough coins");
-                        }
-                        fromParticipant.coinBalance -= amount;
-                        toParticipant.coinBalance += amount;
-                        return [4, Promise.all([fromParticipant.save(), toParticipant.save()])];
-                    case 3:
-                        _a.sent();
-                        return [2];
-                }
-            });
-        });
-    };
     tslib_1.__decorate([
         convector_rest_api_decorators_1.Create('MarketParticipant'),
         convector_core_1.Invokable(),
@@ -1034,20 +972,7 @@ var EnergymarketController = (function (_super) {
         convector_rest_api_decorators_1.Service(),
         convector_core_1.Invokable(),
         tslib_1.__param(0, convector_core_1.Param(yup.string()))
-    ], EnergymarketController.prototype, "escrowAuction", null);
-    tslib_1.__decorate([
-        convector_rest_api_decorators_1.Service(),
-        convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(yup.string())),
-        tslib_1.__param(1, convector_core_1.Param(yup.number()))
-    ], EnergymarketController.prototype, "buyFromGrid", null);
-    tslib_1.__decorate([
-        convector_rest_api_decorators_1.Service(),
-        convector_core_1.Invokable(),
-        tslib_1.__param(0, convector_core_1.Param(yup.string())),
-        tslib_1.__param(1, convector_core_1.Param(yup.string())),
-        tslib_1.__param(2, convector_core_1.Param(yup.number()))
-    ], EnergymarketController.prototype, "transferCoins", null);
+    ], EnergymarketController.prototype, "settleAuction", null);
     EnergymarketController = tslib_1.__decorate([
         convector_core_1.Controller('energymarket')
     ], EnergymarketController);

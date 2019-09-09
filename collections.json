@@ -14,5 +14,21 @@
       "maxPeerCount": 3,
       "blockToLive": 100000000,
       "memberOnlyRead": true
-    }
+    },
+    {
+      "name": "PAR1",
+      "policy": "OR('org1MSP.member', 'org3MSP.member')",
+      "requiredPeerCount": 0,
+      "maxPeerCount": 3,
+      "blockToLive": 100000000,
+      "memberOnlyRead": true
+    },
+    {
+      "name": "PAR2",
+      "policy": "OR('org1MSP.member', 'org4MSP.member')",
+      "requiredPeerCount": 0,
+      "maxPeerCount": 3,
+      "blockToLive": 100000000,
+      "memberOnlyRead": true
+    }       
 ]

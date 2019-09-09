@@ -47,7 +47,7 @@ hurl invoke energymarket energymarket_sendReading "{\"id\":\"READ1\",\"auctionPe
 hurl invoke energymarket energymarket_sendReading "{\"id\":\"READ2\",\"auctionPeriod\":\"AUC1\",\"consumed\":120,\"produced\":60}" -o org4 -u user1
 
 hurl invoke energymarket energymarket_getAllMarketParticipants -o org1 -u user1
-hurl invoke energymarket energymarket_escrowAuction "AUC1" -o org1 -u user1
+hurl invoke energymarket energymarket_settleAuction "AUC1" -o org1 -u user1
 
 
 # npm run cc:invoke -- energymarket org1 user1 energymarket createSupplier '{"id":"SPL_2","name":"supplier2","rawMaterialAvailable":3000}'

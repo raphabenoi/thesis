@@ -70,7 +70,7 @@ hurl invoke energymarket energymarket_createMarket "{\"id\":\"MKT\",\"auctionTim
 
 # ####### ESCROW AUC1 ###########
 # echo "Invoking the ecrowAuction transaction on AUC1 as ORG 1"
-# hurl invoke energymarket energymarket_escrowAuction "AUC1" -t "{\"bids\":\"$BIDS\",\"asks\":\"$ASKS\"}" -o org1 -u user1
+# hurl invoke energymarket energymarket_settleAuction "AUC1" -t "{\"bids\":\"$BIDS\",\"asks\":\"$ASKS\"}" -o org1 -u user1
 
 # ####### ROUND 2 OF BIDDING ###########
 # echo "Building 'BID3' transient input data"
@@ -109,7 +109,7 @@ hurl invoke energymarket energymarket_createMarket "{\"id\":\"MKT\",\"auctionTim
 
 # ####### ESCROW AUC2 ###########
 # echo "Invoking the ecrowAuction transaction on AUC2 as ORG 1"
-# hurl invoke energymarket energymarket_escrowAuction "AUC2" -t "{\"bids\":\"$BIDS\",\"asks\":\"$ASKS\"}" -o org1 -u user1
+# hurl invoke energymarket energymarket_settleAuction "AUC2" -t "{\"bids\":\"$BIDS\",\"asks\":\"$ASKS\"}" -o org1 -u user1
 
 
 # ####### ROUND 3 ###########
@@ -151,7 +151,7 @@ hurl invoke energymarket energymarket_createMarket "{\"id\":\"MKT\",\"auctionTim
 
 # ####### ESCROW AUC3 ###########
 # echo "Invoking the ecrowAuction transaction on AUC3 as ORG 1"
-# hurl invoke energymarket energymarket_escrowAuction "AUC3" -t "{\"bids\":\"$BIDS\",\"asks\":\"$ASKS\"}" -o org1 -u user1
+# hurl invoke energymarket energymarket_settleAuction "AUC3" -t "{\"bids\":\"$BIDS\",\"asks\":\"$ASKS\"}" -o org1 -u user1
 
 
 

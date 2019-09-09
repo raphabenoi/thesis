@@ -14,9 +14,9 @@ export declare class SmartMeterReading extends ConvectorModel<SmartMeterReading>
 export declare class MarketParticipant extends ConvectorModel<MarketParticipant> {
     readonly type: string;
     fingerprint: string;
+    msp: string;
     is: ParticipantType;
     coinBalance: number;
-    frozenCoins: number;
     energyBalance: number;
     readings: Array<FlatConvectorModel<SmartMeterReading>>;
 }

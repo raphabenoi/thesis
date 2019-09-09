@@ -219,12 +219,12 @@ export class Controller {
     }
   }
 
-  async energymarket_escrowAuction(req: Request, res: Response) {
+  async energymarket_settleAuction(req: Request, res: Response) {
     try {
       let cntrl = await EnergymarketControllerClient.init();
       let params = req.body;
       
-      let returnObject = await cntrl.escrowAuction(params.auctionId);
+      let returnObject = await cntrl.settleAuction(params.auctionId);
       if (returnObject === undefined) {
         return res.status(404);
       }
