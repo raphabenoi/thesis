@@ -159,6 +159,7 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
      * @todo Make sure no other 'Grid' instance exists 
      * @todo Restrict creation of this instance to 'LocalMarketOperator' admin
     */
+   debugger;
     grid.fingerprint = this.sender;
     await grid.save();
   }
@@ -460,9 +461,13 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
     auctionId: string
     ) {
 
+    const lmo = await MarketParticipant.getOne('LMO');
+    if(!lmo || lmo.fingerprint !== this.sender){ throw new Error(`Only the LMO is allowed to invoke the clearAuction transaction.`)}
+
     /** Get the private details of the bids and asks from the transient field of the transaction */
-    const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
-    const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
+    // used to be: const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
+    const privateBids = await this.tx.getTransientValue<any>('bids', yup.array(BidPrivateDetails.schema()));
+    const privateAsks = await this.tx.getTransientValue<any>('asks', yup.array(AskPrivateDetails.schema()));
     
     /** Hash the input data to verify it's valitidy */
     const privateBidsHashes = privateBids.map( bid => sha1(bid));
@@ -699,9 +704,13 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
     auctionId: string
   ) {
 
+    const lmo = await MarketParticipant.getOne('MKT');
+    if(!lmo || lmo.fingerprint !== this.sender){ throw new Error(`Only the LMO is allowed to invoke the settleAuction transaction.`)}
+
     /** Get the private details of the bids and asks from the transient field of the transaction */
-    const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
-    const privateAsks = await this.tx.getTransientValue<AskPrivateDetails[]>('asks', yup.array(AskPrivateDetails.schema()));
+    // const privateBids = await this.tx.getTransientValue<BidPrivateDetails[]>('bids', yup.array(BidPrivateDetails.schema()));
+    const privateBids = await this.tx.getTransientValue<any>('bids', yup.array(BidPrivateDetails.schema()));
+    const privateAsks = await this.tx.getTransientValue<any>('asks', yup.array(AskPrivateDetails.schema()));
 
     /** Get the 'Auction' instance on which the sender is askding */
     const auction = await Auction.getOne(auctionId);  
@@ -718,6 +727,12 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
     // const txTimestamp = this.tx.stub.getTxDate().getTime();
 
     const participants = await MarketParticipant.getAll();
+
+    participants.forEach(participant => {
+      if(!participant.readings.find(reading => reading.auctionPeriod === auctionId)) {
+        throw new Error(`Market participant ${participant.id} has not submitted their smart meter reading for this auction period ${auctionId}. Auction cannot be settled.`)
+      }
+    });
 
     /** Get all bids related to the specified 'auctionId' */
     const publicBids = <Bid[]>(await Bid.query(Bid, {

@@ -126,6 +126,7 @@ var EnergymarketController = (function (_super) {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        debugger;
                         grid.fingerprint = this.sender;
                         return [4, grid.save()];
                     case 1:
@@ -400,8 +401,8 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.sendReading = function (reading) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _this = this;
             var participant;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, marketParticipant_model_1.MarketParticipant.getAll().then(function (participants) { return participants.find(function (participant) { return participant.fingerprint === _this.sender; }); })];
@@ -418,32 +419,38 @@ var EnergymarketController = (function (_super) {
     };
     EnergymarketController.prototype.clearAuction = function (auctionId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var privateBids, privateAsks, privateBidsHashes, privateAsksHashes, auction, txTimestamp, publicBids, bids, _loop_1, _i, publicBids_1, bid, publicAsks, asks, _loop_2, _a, publicAsks_1, ask, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_3, out_i_1, i, state_1;
+            var lmo, privateBids, privateAsks, privateBidsHashes, privateAsksHashes, auction, txTimestamp, publicBids, bids, _loop_1, _i, publicBids_1, bid, publicAsks, asks, _loop_2, _a, publicAsks_1, ask, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_3, out_i_1, i, state_1;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4, this.tx.getTransientValue('bids', yup.array(bid_model_1.BidPrivateDetails.schema()))];
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne('LMO')];
                     case 1:
+                        lmo = _b.sent();
+                        if (!lmo || lmo.fingerprint !== this.sender) {
+                            throw new Error("Only the LMO is allowed to invoke the clearAuction transaction.");
+                        }
+                        return [4, this.tx.getTransientValue('bids', yup.array(bid_model_1.BidPrivateDetails.schema()))];
+                    case 2:
                         privateBids = _b.sent();
                         return [4, this.tx.getTransientValue('asks', yup.array(ask_model_1.AskPrivateDetails.schema()))];
-                    case 2:
+                    case 3:
                         privateAsks = _b.sent();
                         privateBidsHashes = privateBids.map(function (bid) { return sha1_1.sha1(bid); });
                         privateAsksHashes = privateAsks.map(function (ask) { return sha1_1.sha1(ask); });
                         return [4, auction_model_1.Auction.getOne(auctionId)];
-                    case 3:
+                    case 4:
                         auction = _b.sent();
                         txTimestamp = (Date.now() + 30000000);
                         if (txTimestamp <= auction.end) {
                             throw new Error("Auction is still 'OPEN' and cannot be cleared yet. Try again once 'txTimestamp' > 'auction.end'");
                         }
-                        if (!(txTimestamp > auction.end)) return [3, 10];
+                        if (!(txTimestamp > auction.end)) return [3, 11];
                         return [4, bid_model_1.Bid.query(bid_model_1.Bid, {
                                 "selector": {
                                     "type": "de.rli.hypenergy.bid",
                                     "auctionId": auctionId
                                 }
                             })];
-                    case 4:
+                    case 5:
                         publicBids = (_b.sent());
                         bids = new Array();
                         _loop_1 = function (bid) {
@@ -467,7 +474,7 @@ var EnergymarketController = (function (_super) {
                                     "auctionId": auctionId
                                 }
                             })];
-                    case 5:
+                    case 6:
                         publicAsks = (_b.sent());
                         asks = new Array();
                         _loop_2 = function (ask) {
@@ -728,22 +735,22 @@ var EnergymarketController = (function (_super) {
                             });
                         };
                         i = lowestPrice;
-                        _b.label = 6;
-                    case 6:
-                        if (!(i <= highestPrice)) return [3, 9];
-                        return [5, _loop_3(i)];
+                        _b.label = 7;
                     case 7:
+                        if (!(i <= highestPrice)) return [3, 10];
+                        return [5, _loop_3(i)];
+                    case 8:
                         state_1 = _b.sent();
                         i = out_i_1;
                         if (typeof state_1 === "object")
                             return [2, state_1.value];
                         if (state_1 === "break")
-                            return [3, 9];
-                        _b.label = 8;
-                    case 8:
-                        i++;
-                        return [3, 6];
+                            return [3, 10];
+                        _b.label = 9;
                     case 9:
+                        i++;
+                        return [3, 7];
+                    case 10:
                         auction.mcp = -1;
                         auction.status = auction_model_1.AuctionStatus.cleared;
                         auction.matchedAmount = 0;
@@ -751,34 +758,45 @@ var EnergymarketController = (function (_super) {
                         auction.unmatchedSupply = supplyCurve_1[highestPrice] - auction.matchedAmount;
                         auction.save();
                         return [2, { auction: auction, privateBidsHashes: privateBidsHashes, privateAsksHashes: privateAsksHashes }];
-                    case 10: return [2];
+                    case 11: return [2];
                 }
             });
         });
     };
     EnergymarketController.prototype.settleAuction = function (auctionId) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var privateBids, privateAsks, auction, grid, market, participants, publicBids, successfulBids, _loop_10, _i, publicBids_2, bid, publicAsks, successfulAsks, _loop_11, _a, publicAsks_2, ask, _loop_12, _b, participants_1, participant;
+            var lmo, privateBids, privateAsks, auction, grid, market, participants, publicBids, successfulBids, _loop_10, _i, publicBids_2, bid, publicAsks, successfulAsks, _loop_11, _a, publicAsks_2, ask, _loop_12, _b, participants_1, participant;
             return tslib_1.__generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4, this.tx.getTransientValue('bids', yup.array(bid_model_1.BidPrivateDetails.schema()))];
+                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne('MKT')];
                     case 1:
+                        lmo = _c.sent();
+                        if (!lmo || lmo.fingerprint !== this.sender) {
+                            throw new Error("Only the LMO is allowed to invoke the settleAuction transaction.");
+                        }
+                        return [4, this.tx.getTransientValue('bids', yup.array(bid_model_1.BidPrivateDetails.schema()))];
+                    case 2:
                         privateBids = _c.sent();
                         return [4, this.tx.getTransientValue('asks', yup.array(ask_model_1.AskPrivateDetails.schema()))];
-                    case 2:
+                    case 3:
                         privateAsks = _c.sent();
                         return [4, auction_model_1.Auction.getOne(auctionId)];
-                    case 3:
+                    case 4:
                         auction = _c.sent();
                         return [4, grid_model_1.Grid.getOne('GRID')];
-                    case 4:
+                    case 5:
                         grid = _c.sent();
                         return [4, market_model_1.Market.getOne('MKT')];
-                    case 5:
+                    case 6:
                         market = _c.sent();
                         return [4, marketParticipant_model_1.MarketParticipant.getAll()];
-                    case 6:
+                    case 7:
                         participants = _c.sent();
+                        participants.forEach(function (participant) {
+                            if (!participant.readings.find(function (reading) { return reading.auctionPeriod === auctionId; })) {
+                                throw new Error("Market participant " + participant.id + " has not submitted their smart meter reading for this auction period " + auctionId + ". Auction cannot be settled.");
+                            }
+                        });
                         return [4, bid_model_1.Bid.query(bid_model_1.Bid, {
                                 "selector": {
                                     "type": "de.rli.hypenergy.bid",
@@ -786,7 +804,7 @@ var EnergymarketController = (function (_super) {
                                     "successful": true
                                 }
                             })];
-                    case 7:
+                    case 8:
                         publicBids = (_c.sent());
                         successfulBids = new Array();
                         _loop_10 = function (bid) {
@@ -811,7 +829,7 @@ var EnergymarketController = (function (_super) {
                                     "successful": true
                                 }
                             })];
-                    case 8:
+                    case 9:
                         publicAsks = (_c.sent());
                         successfulAsks = new Array();
                         _loop_11 = function (ask) {
@@ -906,13 +924,13 @@ var EnergymarketController = (function (_super) {
                         auction.status = auction_model_1.AuctionStatus.escrowed;
                         Promise.all(participants.map(function (participant) { return participant.save(); }));
                         return [4, auction.save()];
-                    case 9:
-                        _c.sent();
-                        return [4, market.save()];
                     case 10:
                         _c.sent();
-                        return [4, grid.save()];
+                        return [4, market.save()];
                     case 11:
+                        _c.sent();
+                        return [4, grid.save()];
+                    case 12:
                         _c.sent();
                         return [2, {
                                 participants: participants,

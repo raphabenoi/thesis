@@ -1,0 +1,95 @@
+import { ChaincodeTx } from '@worldsibu/convector-platform-fabric';
+import { ConvectorController, FlatConvectorModel } from '@worldsibu/convector-core';
+import { Ask, AskPrivateDetails } from './models/ask.model';
+import { Auction } from './models/auction.model';
+import { Bid, BidPrivateDetails } from './models/bid.model';
+import { Market } from './models/market.model';
+import { Grid } from './models/grid.model';
+import { MarketParticipant, SmartMeterReading } from './models/marketParticipant.model';
+export declare class EnergymarketController extends ConvectorController<ChaincodeTx> {
+    createMarketParticipant(marketParticipant: MarketParticipant): Promise<void>;
+    getAllMarketParticipants(): Promise<MarketParticipant[]>;
+    getMarketParticipantById(marketParticipantId: string): Promise<MarketParticipant>;
+    createAuction(auction: Auction): Promise<void>;
+    getAllAuctions(): Promise<Auction[]>;
+    getAuctionById(auctionId: string): Promise<Auction>;
+    createMarket(market: Market): Promise<void>;
+    getAllMarkets(): Promise<Market[]>;
+    createGrid(grid: Grid): Promise<void>;
+    getAllGrids(): Promise<Grid[]>;
+    sendBidPrivateDetails(): Promise<any>;
+    placeBid(bid: Bid): Promise<any>;
+    getAllBids(): Promise<Bid[]>;
+    getBidById(bidId: string): Promise<Bid>;
+    getBidsByAuctionId(auctionId: string): Promise<Bid[]>;
+    getBidPrivateDetails(bidId: string): Promise<{
+        readonly type?: "de.rli.hypenergy.bid";
+        amount?: number;
+        price?: number;
+        unmatchedAmount?: number;
+        id?: string;
+        update?: (content: {
+            readonly type?: "de.rli.hypenergy.bid";
+            amount?: number;
+            price?: number;
+            unmatchedAmount?: number;
+            id?: string;
+            update?: any;
+            fetch?: (storageOptions?: any) => Promise<void>;
+            history?: () => Promise<import("../../../../../../../../../../Users/raphaelbenoit/tubCloud/Masterarbeit/Code/05\u2014hypenergy/hypenergy/node_modules/@worldsibu/convector-core-model/dist/src/convector-model").History<BidPrivateDetails>[]>;
+            save?: (storageOptions?: any) => Promise<void>;
+            clone?: () => BidPrivateDetails;
+            toJSON?: (skipEmpty?: boolean) => any;
+            delete?: (storageOptions?: any) => Promise<void>;
+        }) => Promise<void>;
+        fetch?: (storageOptions?: any) => Promise<void>;
+        history?: () => Promise<import("../../../../../../../../../../Users/raphaelbenoit/tubCloud/Masterarbeit/Code/05\u2014hypenergy/hypenergy/node_modules/@worldsibu/convector-core-model/dist/src/convector-model").History<BidPrivateDetails>[]>;
+        save?: (storageOptions?: any) => Promise<void>;
+        clone?: () => BidPrivateDetails;
+        toJSON?: (skipEmpty?: boolean) => any;
+        delete?: (storageOptions?: any) => Promise<void>;
+    }>;
+    sendAskPrivateDetails(): Promise<any>;
+    placeAsk(ask: Ask): Promise<any>;
+    getAllAsks(): Promise<Ask[]>;
+    getAskById(askId: string): Promise<Ask>;
+    getAsksByAuctionId(auctionId: string): Promise<Ask[]>;
+    getAskPrivateDetails(askId: string): Promise<{
+        readonly type?: "de.rli.hypenergy.ask";
+        amount?: number;
+        price?: number;
+        unmatchedAmount?: number;
+        id?: string;
+        update?: (content: {
+            readonly type?: "de.rli.hypenergy.ask";
+            amount?: number;
+            price?: number;
+            unmatchedAmount?: number;
+            id?: string;
+            update?: any;
+            fetch?: (storageOptions?: any) => Promise<void>;
+            history?: () => Promise<import("../../../../../../../../../../Users/raphaelbenoit/tubCloud/Masterarbeit/Code/05\u2014hypenergy/hypenergy/node_modules/@worldsibu/convector-core-model/dist/src/convector-model").History<AskPrivateDetails>[]>;
+            save?: (storageOptions?: any) => Promise<void>;
+            clone?: () => AskPrivateDetails;
+            toJSON?: (skipEmpty?: boolean) => any;
+            delete?: (storageOptions?: any) => Promise<void>;
+        }) => Promise<void>;
+        fetch?: (storageOptions?: any) => Promise<void>;
+        history?: () => Promise<import("../../../../../../../../../../Users/raphaelbenoit/tubCloud/Masterarbeit/Code/05\u2014hypenergy/hypenergy/node_modules/@worldsibu/convector-core-model/dist/src/convector-model").History<AskPrivateDetails>[]>;
+        save?: (storageOptions?: any) => Promise<void>;
+        clone?: () => AskPrivateDetails;
+        toJSON?: (skipEmpty?: boolean) => any;
+        delete?: (storageOptions?: any) => Promise<void>;
+    }>;
+    sendReading(reading: FlatConvectorModel<SmartMeterReading>): Promise<MarketParticipant>;
+    clearAuction(auctionId: string): Promise<(number | Auction)[] | {
+        auction: Auction;
+        privateBidsHashes: any;
+        privateAsksHashes: any;
+    }>;
+    settleAuction(auctionId: string): Promise<{
+        participants: MarketParticipant[];
+        market: Market;
+        grid: Grid;
+    }>;
+}

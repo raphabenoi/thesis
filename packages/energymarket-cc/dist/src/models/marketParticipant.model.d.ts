@@ -3,7 +3,7 @@ export declare enum ParticipantType {
     producer = "producer",
     consumer = "consumer",
     prosumer = "prosumer",
-    lmo = "lmo",
+    lmo = "lmo"
 }
 export declare class SmartMeterReading extends ConvectorModel<SmartMeterReading> {
     readonly type: string;
