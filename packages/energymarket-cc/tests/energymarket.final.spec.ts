@@ -182,129 +182,327 @@ describe('CHAINCODE TEST SERIES', () => {
     expect(savedGRID.id).to.eql(grid.id);
   });
 
-  // it('UNIT TEST 1: a market participant of type PROSUMER places multiple buy and sell orders which are registered successfully on the ledger', async () => {
+  it('UNIT TEST 1: a market participant of type PROSUMER places multiple buy and sell orders which are registered successfully on the ledger', async () => {
 
-  //   /** Creates an Auction instance */
-  //   auction = new Auction({
-  //     id: 'AUC1',
-  //     start: Date.now(),
-  //     end: (Date.now() + 1000000)
-  //   });
-  //   await energymarketCtrl.org1.createAuction(auction).catch(ex => ex.responses[0].error.message);
-  //   let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id).catch(ex => ex.responses[0].error.message).then(auction => new Auction(auction));
-  //   expect(savedAuction.id).to.eql(auction.id);
+    /** Creates an Auction instance */
+    auction = new Auction({
+      id: 'AUC1',
+      start: Date.now(),
+      end: (Date.now() + 1000000)
+    });
+    await energymarketCtrl.org1.createAuction(auction).catch(ex => ex.responses[0].error.message);
+    let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id).catch(ex => ex.responses[0].error.message).then(auction => new Auction(auction));
+    expect(savedAuction.id).to.eql(auction.id);
     
-  //   /** Creates a number of buy orders */
-  //   let numberOfBids = 2;                             // = numberOfOrganisations - 2;
-  //   // let bids = new Array<FullBid>(numberOfBids);   // has been declared globally
-  //   for (let i=0; i<numberOfBids; i++) {
-  //     bids[i] = new FullBid({ 
-  //       id: `BID_${auction.id}_${identityOrg[2]}`,    // removed i to only have PAR1
-  //       auctionId: auction.id, 
-  //       amount: Math.floor(Math.random() * 100) + 1, 
-  //       price: Math.floor(Math.random() * 21) + 5,
-  //       sender: 'PAR1'                                // removed i to only have PAR1
-  //     });
-  //   }
+    /** Creates a number of buy orders */
+    let numberOfBids = 2;                             // = numberOfOrganisations - 2;
+    // let bids = new Array<FullBid>(numberOfBids);   // has been declared globally
+    for (let i=0; i<numberOfBids; i++) {
+      bids[i] = new FullBid({ 
+        id: `BID_${auction.id}_${identityOrg[2]}`,    // removed i to only have PAR1
+        auctionId: auction.id, 
+        amount: Math.floor(Math.random() * 100) + 1, 
+        price: Math.floor(Math.random() * 21) + 5,
+        sender: 'PAR1'                                // removed i to only have PAR1
+      });
+    }
 
-  //   /** Place the bids as PAR1 who belongs to org3 */
-  //   for(const bid of bids){
-  //     let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
-  //     /** Invokes the 'public' transaction */
-  //     await energymarketCtrl['org3'].placeBid(publicBid);
-  //     /** Invokes the 'private' transaction */
-  //     await energymarketCtrl['org3']
-  //       .$config({transient: { bid: bid.toJSON() }})
-  //       .sendBidPrivateDetails()
-  //       .catch(ex => ex.responses[0].error.message);
-  //   }
+    /** Place the bids as PAR1 who belongs to org3 */
+    for(const bid of bids){
+      let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
+      /** Invokes the 'public' transaction */
+      await energymarketCtrl['org3'].placeBid(publicBid);
+      /** Invokes the 'private' transaction */
+      await energymarketCtrl['org3']
+        .$config({transient: { bid: bid.toJSON() }})
+        .sendBidPrivateDetails()
+        .catch(ex => ex.responses[0].error.message);
+    }
 
-  //   /** Creates a number of sell orders */
-  //   let numberOfAsks = 2;
-  //   // let asks = new Array<FullAsk>(numberOfAsks)      // has been declared globally
-  //   for (let i=0; i<numberOfAsks; i++) {
-  //     asks[i] = new FullAsk({ 
-  //       id: `ASK_${auction.id}_${identityOrg[2]}`,      // removed i to only have PAR1
-  //       auctionId: auction.id, 
-  //       amount: Math.floor(Math.random() * 100) + 1, 
-  //       price: Math.floor(Math.random() * 20) + 5,
-  //       sender: 'PAR1'                                  // removed i to only have PAR1
-  //     });
-  //   }
+    /** Creates a number of sell orders */
+    let numberOfAsks = 2;
+    // let asks = new Array<FullAsk>(numberOfAsks)      // has been declared globally
+    for (let i=0; i<numberOfAsks; i++) {
+      asks[i] = new FullAsk({ 
+        id: `ASK_${auction.id}_${identityOrg[2]}`,      // removed i to only have PAR1
+        auctionId: auction.id, 
+        amount: Math.floor(Math.random() * 100) + 1, 
+        price: Math.floor(Math.random() * 20) + 5,
+        sender: 'PAR1'                                  // removed i to only have PAR1
+      });
+    }
 
-  //   /** Place the asks as PAR1 who belongs to org3 */
-  //   for (const ask of asks) { 
-  //     let publicAsk = new Ask({id: ask.id, auctionId: ask.auctionId, sender: ask.sender});
-  //     /** Invokes the 'public' transaction */
-  //     await energymarketCtrl['org3'].placeAsk(publicAsk);
-  //     /** Invokes the 'private' transaction */
-  //     await energymarketCtrl['org3']
-  //       .$config({transient: { ask: ask.toJSON() }})
-  //       .sendAskPrivateDetails()
-  //       .catch(ex => ex.responses[0].error.message);
-  //   };
+    /** Place the asks as PAR1 who belongs to org3 */
+    for (const ask of asks) { 
+      let publicAsk = new Ask({id: ask.id, auctionId: ask.auctionId, sender: ask.sender});
+      /** Invokes the 'public' transaction */
+      await energymarketCtrl['org3'].placeAsk(publicAsk);
+      /** Invokes the 'private' transaction */
+      await energymarketCtrl['org3']
+        .$config({transient: { ask: ask.toJSON() }})
+        .sendAskPrivateDetails()
+        .catch(ex => ex.responses[0].error.message);
+    };
 
-  //   /** Retrieve the buy and sell orders from the ledger */
-  //   let placedBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
-  //   let placedAsks = await energymarketCtrl.org1.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
-  //   /** Print orders for illustration purposes */
-  //   console.log(`Array of placed bids: ${placedBids}`);
-  //   console.log(`Array of placed asks: ${placedAsks}`);
+    /** Retrieve the buy and sell orders from the ledger */
+    let placedBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
+    let placedAsks = await energymarketCtrl.org1.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
+    /** Print orders for illustration purposes */
+    console.log(`Array of placed bids: ${placedBids}`);
+    console.log(`Array of placed asks: ${placedAsks}`);
 
-  //   /** Test if the returned arrays have the correct length */
-  //   expect(placedBids).to.be.an('array').lengthOf(2);
-  //   expect(placedAsks).to.be.an('array').lengthOf(2);
+    /** Test if the returned arrays have the correct length */
+    expect(placedBids).to.be.an('array').lengthOf(2);
+    expect(placedAsks).to.be.an('array').lengthOf(2);
 
-  //   /** Check ID of retrieved orders to test if the content of the orders has been stored correctly */
-  //   [0,1].forEach( index => {
-  //     expect(placedBids[index].id).to.be.eql(bids[index].id);
-  //     expect(placedAsks[index].id).to.be.eql(asks[index].id);
-  //   });
+    /** Check ID of retrieved orders to test if the content of the orders has been stored correctly */
+    [0,1].forEach( index => {
+      expect(placedBids[index].id).to.be.eql(bids[index].id);
+      expect(placedAsks[index].id).to.be.eql(asks[index].id);
+    });
 
-  // })
+  })
 
 
 
-  // it('UNIT TEST 2: PAR1 and PAR2 both try to access the private information of the orders placed by PAR1 for AUC1', async () => {
+  it('UNIT TEST 2: PAR1 and PAR2 both try to access the private information of the orders placed by PAR1 for AUC1', async () => {
 
-  //   /** Invoke transaction as PAR1 belonging to org3 */
-  //   let resPAR1 = await energymarketCtrl.org3.getBidPrivateDetails(bids[0].id).catch(ex => ex.responses[0].error.message).then(details => new BidPrivateDetails(details));
+    /** Invoke transaction as PAR1 belonging to org3 */
+    let resPAR1 = await energymarketCtrl.org3.getBidPrivateDetails(bids[0].id).catch(ex => ex.responses[0].error.message).then(details => new BidPrivateDetails(details));
 
-  //   /** Invoke transaction as PAR2 belonging to org4 */
-  //   let resPAR2 = await energymarketCtrl.org4.getBidPrivateDetails(bids[0].id).catch(ex => ex.responses[0].error.message).then(details => new BidPrivateDetails(details));
+    /** Invoke transaction as PAR2 belonging to org4 */
+    let resPAR2 = await energymarketCtrl.org4.getBidPrivateDetails(bids[0].id).catch(ex => ex.responses[0].error.message).then(details => new BidPrivateDetails(details));
 
-  //   /** First expect formulated as positive */
-  //   expect(resPAR1.id).to.eql(bids[0].id);
-  //   /** Second expect formulated as negative */
-  //   expect(resPAR2.id).to.not.eql(bids[0].id);
+    /** First expect formulated as positive */
+    expect(resPAR1.id).to.eql(bids[0].id);
+    /** Second expect formulated as negative */
+    expect(resPAR2.id).to.not.eql(bids[0].id);
     
-  // });
+  });
 
-  // it('UNIT TEST 3: PAR1 sends its actual smart meter consumption and makes sure it is successfully stored on the ledger', async () => {
+  it('UNIT TEST 3: PAR1 sends its actual smart meter consumption and makes sure it is successfully stored on the ledger', async () => {
 
-  //   /** Calculate the sum of all bids and asks placed by PAR1 for AUC1 */
-  //   let bidAmount = bids.filter(bid => bid.sender === 'PAR1').reduce((acc,bid) => acc + bid.amount, 0);
-  //   let askAmount = asks.filter(ask => ask.sender === 'PAR1').reduce((acc,ask) => acc + ask.amount, 0);
+    /** Calculate the sum of all bids and asks placed by PAR1 for AUC1 */
+    let bidAmount = bids.filter(bid => bid.sender === 'PAR1').reduce((acc,bid) => acc + bid.amount, 0);
+    let askAmount = asks.filter(ask => ask.sender === 'PAR1').reduce((acc,ask) => acc + ask.amount, 0);
 
-  //   /** Create a smart meter reading where the actual consumption and or production differs slightly from the submitted numbers */
-  //   let reading = new SmartMeterReading({
-  //     id: 'READ_AUC1_org3',
-  //     auctionPeriod: auction.id,
-  //     consumed: bidAmount + Math.floor(Math.random() * bidAmount/10) - Math.floor(Math.random() * bidAmount/10),
-  //     produced: askAmount + Math.floor(Math.random() * askAmount/10) - Math.floor(Math.random() * askAmount/10)
-  //   });
+    /** Create a smart meter reading where the actual consumption and or production differs slightly from the submitted numbers */
+    let reading = new SmartMeterReading({
+      id: 'READ_AUC1_org3',
+      auctionPeriod: auction.id,
+      consumed: bidAmount + Math.floor(Math.random() * bidAmount/10) - Math.floor(Math.random() * bidAmount/10),
+      produced: askAmount + Math.floor(Math.random() * askAmount/10) - Math.floor(Math.random() * askAmount/10)
+    });
 
-  //   let res = await energymarketCtrl['org3'].sendReading(reading).catch(ex => ex.responses[0].error.message);
+    let res = await energymarketCtrl['org3'].sendReading(reading).catch(ex => ex.responses[0].error.message);
 
-  //   let savedPAR = await energymarketCtrl.org1.getMarketParticipantById('PAR1').catch(ex => ex.responses[0].error.message).then(participant => new MarketParticipant(participant));
+    let savedPAR = await energymarketCtrl.org1.getMarketParticipantById('PAR1').catch(ex => ex.responses[0].error.message).then(participant => new MarketParticipant(participant));
     
-  //   expect(savedPAR.readings).to.be.an('array').lengthOf(1);
-  // });
+    expect(savedPAR.readings).to.be.an('array').lengthOf(1);
+  });
 
-  // it('UNIT TEST 4: 4 market participants each place 2 oders, the market is cleared, readings sumbitted, and market settled', async () => {
+  it('UNIT TEST 4: 4 market participants each place 2 oders, the market is cleared, readings sumbitted, and market settled', async () => {
+
+    /** Creates an Auction instance */
+    auction = new Auction({
+      id: 'AUC2',
+      start: Date.now(),
+      end: (Date.now() + 1000000)
+    });
+    await energymarketCtrl.org1.createAuction(auction).catch(ex => ex.responses[0].error.message);
+
+    let numberOfBids = 2;
+    for (let i=0; i<numberOfBids; i++) {
+      bids[i] = new FullBid({ 
+        id: `BID_${i}_${auction.id}_PAR1_org3`, 
+        auctionId: auction.id, 
+        amount: Math.floor(Math.random() * 100) + 1, 
+        price: Math.floor(Math.random() * 21) + 5,
+        sender: 'PAR1'
+      });
+    }
+
+    for (let i=0; i<numberOfBids; i++) {
+      bids[i] = new FullBid({ 
+        id: `BID_${i}_${auction.id}_PAR3_org5`, 
+        auctionId: auction.id, 
+        amount: Math.floor(Math.random() * 100) + 1, 
+        price: Math.floor(Math.random() * 21) + 5,
+        sender: 'PAR3'
+      });
+    }
+
+    let numberOfAsks = 2;
+    for (let i=0; i<numberOfAsks; i++) {
+      asks[i] = new FullAsk({ 
+        id: `ASK_${i}_${auction.id}_PAR2_org4`, 
+        auctionId: auction.id, 
+        amount: Math.floor(Math.random() * 100) + 1, 
+        price: Math.floor(Math.random() * 21) + 5,
+        sender: 'PAR2'
+      });
+    }
+
+    for (let i=0; i<numberOfAsks; i++) {
+      asks[i] = new FullAsk({ 
+        id: `ASK_${i}_${auction.id}_PAR4_org6`, 
+        auctionId: auction.id, 
+        amount: Math.floor(Math.random() * 100) + 1, 
+        price: Math.floor(Math.random() * 21) + 5,
+        sender: 'PAR4'
+      });
+    }
+
+    /** Place the bids as the "rightful" organisation */
+    for(const bid of bids){
+      /** The bid is split in its 'public' and its 'private' part */
+      let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
+      /** Public transaction: bid.id.substring(16,) = orgX */
+      await energymarketCtrl[bid.id.substring(16,)].placeBid(publicBid);
+      /** Private transaction */
+      await energymarketCtrl[bid.id.substring(16,)]      //[Object.keys(fingerprint).find(key => fingerprint[key] === bid.sender)]
+        .$config({transient: { bid: bid.toJSON() }})
+        .sendBidPrivateDetails()
+        .catch(ex => ex.responses[0].error.message);
+    }
+
+    /** Same for the asks */
+    for (const ask of asks) { 
+      let publicAsk = new Ask({id: ask.id, auctionId: ask.auctionId, sender: ask.sender});
+      await energymarketCtrl[ask.id.substring(16,)].placeAsk(publicAsk);
+      await energymarketCtrl[ask.id.substring(16,)]
+        .$config({transient: { ask: ask.toJSON() }})
+        .sendAskPrivateDetails()
+        .catch(ex => ex.responses[0].error.message);
+    }
+
+    /** Retrieve all orders for AUC2 from the ledger */
+    let placedBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
+    let placedAsks = await energymarketCtrl.org1.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
+    
+    /** Make sure all orders have been placed successfully */
+    expect(placedBids).to.be.an('array').lengthOf(4);
+    expect(placedAsks).to.be.an('array').lengthOf(4);
 
 
-  // });
+    /******************/
+    /** CLEAR AUCTION */
+    /******************/
+
+    let bidPrivateDetails = bids.map(bid => new BidPrivateDetails({id: bid.id, price: bid.price, amount: bid.amount}));
+    let askPrivateDetails = asks.map(ask => new AskPrivateDetails({id: ask.id, price: ask.price, amount: ask.amount}));
+ 
+    /** Invoke the clearAuction transaction as LMO (org1) */
+    const clearedAuction = await energymarketCtrl.org1
+      .$config({transient: { bids: JSON.stringify(bidPrivateDetails) , asks: JSON.stringify(askPrivateDetails) }})
+      .clearAuction(auction.id)
+      .catch(ex => ex.responses[0].error.message)
+      .then(auction => new Auction(auction));
+    console.log(clearedAuction);
+    expect(clearedAuction.mcp).to.exist;
+    
+    /** Filter the successfull bids */
+    let successfulBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
+    successfulBids = successfulBids.filter(bid => bid.successful == true);
+    let successfulAsks = await energymarketCtrl.org1.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
+    successfulAsks = successfulAsks.filter(ask => ask.successful == true);
+    
+    /** Make sure all successful bids have prices equal or higher than the MCP */
+    for(let successfulBid of successfulBids){
+      let index = bids.findIndex(bid => bid.id == successfulBid.id);
+      expect(bids[index].price).to.be.at.least(clearedAuction.mcp);
+      bids[index].successful = true;
+      if(successfulBid.unmatchedDemand){bids[index].unmatchedAmount = successfulBid.unmatchedDemand}
+    };
+    /** Make sure all successful asks have prices equal or lower than the MCP */
+    for(let successfulAsk of successfulAsks){
+      let index = asks.findIndex(ask => ask.id == successfulAsk.id);
+      expect(asks[index].price).to.be.at.most(clearedAuction.mcp);
+      asks[index].successful = true;
+      if(successfulAsk.unmatchedSupply){asks[index].unmatchedAmount = successfulAsk.unmatchedSupply}
+    }
+
+    /************************/
+    /** SEND METER READINGS */
+    /************************/
+
+    /** Create a Smart Meter Reading for every participant which can differ up to 10% from actual consumption/production */
+    let numberOfReadings = numberOfOrganisations - 2;
+    let readings = new Array<SmartMeterReading>(numberOfReadings);
+    for (let i=0; i<numberOfReadings; i++) {
+      let bidAmount = bids.filter(bid => bid.sender === `PAR${(i+1)}`).reduce((acc,bid) => acc + bid.amount, 0);
+      let askAmount = asks.filter(ask => ask.sender === `PAR${(i+1)}`).reduce((acc,ask) => acc + ask.amount, 0);
+      readings[i] = new SmartMeterReading({
+        id: `READ_${auction.id}_PAR${(i+1)}_${identityOrg[i+2]}`,
+        auctionPeriod: auction.id,
+        consumed: bidAmount + Math.floor(Math.random() * bidAmount/10) - Math.floor(Math.random() * bidAmount/10),
+        produced: askAmount + Math.floor(Math.random() * askAmount/10) - Math.floor(Math.random() * askAmount/10)
+      });
+    }
+
+    /** Invoke sendReading transaction for every participant */
+    for (let i=3; i<=numberOfOrganisations; i++) { 
+      let res = await energymarketCtrl['org' + i].sendReading(readings[i-3]).catch(ex => ex.responses[0].error.message); 
+      console.log(res);
+    }
+
+    /** Make sure all reading have been successfully stored on the ledger */
+    let savedPAR = await energymarketCtrl.org1.getAllMarketParticipants().catch(ex => ex.responses[0].error.message).then(participants => participants.map(p => new MarketParticipant(p)));
+    savedPAR.forEach(participant => expect(participant.readings).to.be.an('array').lengthOf(1));
+
+
+    /*******************/
+    /** SETTLE AUCTION */
+    /*******************/
+
+    /** Update private details */
+    bidPrivateDetails = bids.map(bid => new BidPrivateDetails({id: bid.id, price: bid.price, amount: bid.amount, unmatchedAmount: bid.unmatchedAmount}));
+    askPrivateDetails = asks.map(ask => new AskPrivateDetails({id: ask.id, price: ask.price, amount: ask.amount, unmatchedAmount: ask.unmatchedAmount}));
+   
+    /** Invoke the settleAuction transaction as LMO (org1) */
+    let res = await energymarketCtrl.org1
+      .$config({transient: { bids: JSON.stringify(bidPrivateDetails) , asks: JSON.stringify(askPrivateDetails) }})
+      .settleAuction(auction.id)
+      .catch(ex => ex.responses[0].error.message);
+    console.log(res);
+    
+    /** Retrieve instances from the ledger */
+    let savedAuction = await energymarketCtrl.org1.getAuctionById(auction.id).catch(ex => ex.responses[0].error.message).then(auction => new Auction(auction));
+    console.log(savedAuction);
+    let savedMARKET = await energymarketCtrl.org1.getAllMarkets().catch(ex => ex.responses[0].error.message).then(markets => new Market(markets[0]));
+    console.log(savedMARKET);
+    let savedGRID = await energymarketCtrl.org2.getAllGrids().catch(ex => ex.responses[0].error.message).then(grid => new Grid(grid[0]));
+    console.log(savedGRID);
+    savedPAR = await energymarketCtrl.org3.getAllMarketParticipants().catch(ex => ex.responses[0].error.message).then(participants => participants.map(p => new MarketParticipant(p)));
+
+    /** Calculate some values to compare with expected behaviour */
+    let sumDemand = savedAuction.matchedAmount + savedAuction.unmatchedDemand;
+    let sumSupply = savedAuction.matchedAmount + savedAuction.unmatchedSupply;
+    let sumBids = bids.reduce( (acc, bid) => acc += bid.amount, 0);
+    let sumAsks = asks.reduce( (acc, ask) => acc += ask.amount, 0);
+
+    /** Retrieve orders from the ledger */
+    successfulBids = await energymarketCtrl.org1.getBidsByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(bids => bids.map(bid => new Bid(bid)));
+    successfulBids = successfulBids.filter(bid => bid.successful == true);
+    successfulAsks = await energymarketCtrl.org1.getAsksByAuctionId(auction.id).catch(ex => ex.responses[0].error.message).then(asks => asks.map(ask => new Ask(ask)));;
+    successfulAsks = successfulAsks.filter(ask => ask.successful == true);
+    
+    /** Make sure the auction has been settled correctly */
+    savedPAR.forEach(participant => expect(participant).to.have.deep.property('id'));
+    expect(savedPAR).to.be.an('array').lengthOf(numberOfOrganisations - 2);
+    expect(sumDemand).to.be.eql(sumBids);
+    expect(sumSupply).to.be.eql(sumAsks);
+
+    /** Test if the incentives for accurate bidding are implemented correctly */
+    let bidAmount = bids.filter(bid => bid.sender === 'PAR1').reduce((acc,bid) => acc + bid.amount, 0);
+    let diff = bidAmount - readings[0].consumed;
+    if( diff > 0 ) {
+      expect(savedPAR[0].coinBalance).to.be.eql( - (bidAmount * savedAuction.mcp) + ( diff * savedGRID.gridSellPrice ) )
+    } else {
+      expect(savedPAR[0].coinBalance).to.be.eql( - (bidAmount * savedAuction.mcp) + ( diff * savedGRID.gridBuyPrice ) )
+    }
+
+  });
 
 
   // it('should place bids and ask from different participants', async () => {

@@ -14,8 +14,8 @@
     "test": "npm run build && mocha --inspect --debug=8888 -r ts-node/register tests/*.final.spec.ts --reporter spec"
   },
   "dependencies": {
-    "@worldsibu/convector-core": "1.3.6",
-    "@worldsibu/convector-platform-fabric": "1.3.6",
+    "@worldsibu/convector-core": "1.3.3",
+    "@worldsibu/convector-platform-fabric": "1.3.3",
     "@worldsibu/convector-rest-api-decorators": "1.0.8",
     "reflect-metadata": "^0.1.12",
     "sha1": "^1.1.1",
