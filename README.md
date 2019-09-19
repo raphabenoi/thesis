@@ -1,7 +1,7 @@
 # Master Thesis
 **Project Name: `hypenergy`**
 
-This repositpry containts the code for my Master's thesis: the implementation of a decentralised application called **hypenergy**, a energy marketplace for community-based local electricity markets.
+This repositpry containts the code for my Master's thesis: the implementation of a decentralised application called **hypenergy**, a peer-to-peer marketplace for community-based local electricity markets.
 
 ## Start
 
