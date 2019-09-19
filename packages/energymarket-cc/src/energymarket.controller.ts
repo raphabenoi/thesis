@@ -461,7 +461,7 @@ export class  EnergymarketController extends ConvectorController<ChaincodeTx> {
     auctionId: string
     ) {
 
-    const lmo = await MarketParticipant.getOne('LMO');
+    const lmo = await Market.getOne('MKT');
     if(!lmo || lmo.fingerprint !== this.sender){ throw new Error(`Only the LMO is allowed to invoke the clearAuction transaction.`)}
 
     /** Get the private details of the bids and asks from the transient field of the transaction */
