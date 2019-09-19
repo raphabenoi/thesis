@@ -3,6 +3,10 @@
 
 This repositpry containts the code for my Master's thesis: the implementation of a decentralised application called **hypenergy**, a peer-to-peer marketplace for community-based local electricity markets.
 
+* The chaincode can be found in: `packages/energymarket-cc/src/`  
+* The unit test are described in: `packages/energymarket-cc/tests/energymarket.final.spec.ts`
+
+
 ## Prerequisites (must be installed)
 * Node version 8.15.0
 * Docker 18.09.2 (make sure installation contains docker-compose)
