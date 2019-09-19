@@ -3,6 +3,13 @@
 
 This repositpry containts the code for my Master's thesis: the implementation of a decentralised application called **hypenergy**, a peer-to-peer marketplace for community-based local electricity markets.
 
+## Prerequisites (must be installed)
+* Node version 8.15.0
+* Docker 18.09.2 (make sure installation contains docker-compose)
+* npm 6.4.1
+* nvm can be used to install and switch between different node versions
+
+
 ## Start
 
 ```
