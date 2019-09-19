@@ -422,7 +422,7 @@ var EnergymarketController = (function (_super) {
             var lmo, privateBids, privateAsks, privateBidsHashes, privateAsksHashes, auction, txTimestamp, publicBids, bids, _loop_1, _i, publicBids_1, bid, publicAsks, asks, _loop_2, _a, publicAsks_1, ask, lowestPrice, highestPrice, demandCurve_1, supplyCurve_1, _highestPrice, i, _loop_3, out_i_1, i, state_1;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4, marketParticipant_model_1.MarketParticipant.getOne('LMO')];
+                    case 0: return [4, market_model_1.Market.getOne('MKT')];
                     case 1:
                         lmo = _b.sent();
                         if (!lmo || lmo.fingerprint !== this.sender) {

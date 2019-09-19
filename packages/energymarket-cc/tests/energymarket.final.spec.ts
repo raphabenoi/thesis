@@ -5,7 +5,7 @@
 
 import { join, resolve } from 'path';
 import { keyStore, identityName, channel, chaincode, networkProfile, identityId, identityOrg } from './env';
-import { expect } from 'chai';
+import {expect} from 'chai-as-promised';
 import { MockControllerAdapter } from '@worldsibu/convector-adapter-mock';
 import { FabricControllerAdapter } from '@worldsibu/convector-adapter-fabric';
 import { ClientFactory, ConvectorControllerClient, FlatConvectorModel, BaseStorage } from '@worldsibu/convector-core';
@@ -21,6 +21,7 @@ import { MarketParticipant, ParticipantType, SmartMeterReading } from '../src/mo
 import { sha1 } from 'sha1';
 
 
+
 describe('CHAINCODE TEST SERIES', () => {
 
   /** Change this number to the number of organisations participating in the local market */
@@ -32,6 +33,7 @@ describe('CHAINCODE TEST SERIES', () => {
   const adapter: {[k: string]: FabricControllerAdapter} = {};
   const energymarketCtrl: {[k: string]: ConvectorControllerClient<EnergymarketController>} = {};
 
+
   /**********************/
   /** GLOBAL VARIABLES **/
   /**********************/
@@ -40,9 +42,6 @@ describe('CHAINCODE TEST SERIES', () => {
   let identityOrg = new Array<string>(numberOfOrganisations);
   for(let i=0; i<numberOfOrganisations; i++){identityOrg[i] = "org" + (i+1);};
 
-  // /** This array will be used as IDs for market participants: ["PAR_org1", "PAR_org2", ...] */
-  // const identityId:string[] = identityOrg.map(org => org = "PAR_" + org );
-
   /** Object which will store the fingerprints for the respective organisations */
   let fingerprint: {[k: string]: string} = {};
 
@@ -50,8 +49,6 @@ describe('CHAINCODE TEST SERIES', () => {
   let asks = new Array<FullAsk>(numberOfOrganisations-2);
   let auction: Auction;
 
-  // let adapter: MockControllerAdapter;
-  // let energymarketCtrl: ConvectorControllerClient<EnergymarketController>;
   
   before(async () => {
     /** Array containing the Paths to the key for every organisation */
@@ -69,17 +66,6 @@ describe('CHAINCODE TEST SERIES', () => {
     const couchDBHost = 'localhost';
     const couchDBPort = 5084;
 
-    // /** Create an blockchain adapter for every organisation to make calls from different "perspectives" */
-    // let adapter_org1 = new FabricControllerAdapter({
-    //   txTimeout: 300000,
-    //   user: "user1",
-    //   channel: "ch1",
-    //   chaincode: "energymarket",
-    //   keyStore: `/${homedir}/hyperledger-fabric-network/.hfc-${identityOrg}`,
-    //   networkProfile: `/${homedir}/hyperledger-fabric-network/network-profiles/${identityOrg}.network-profile.yaml`
-    //   // userMspPath: keyStore
-    // });
-
     /** Create a Fabric adapter and controller and fill the above objects  */
     for(let i=0; i<numberOfOrganisations; i++){
       adapter['org'+(i+1)] = new FabricControllerAdapter({
@@ -94,18 +80,6 @@ describe('CHAINCODE TEST SERIES', () => {
       await adapter['org'+(i+1)].init();
       energymarketCtrl['org'+(i+1)] = ClientFactory(EnergymarketController, adapter['org'+(i+1)]);
       };
-
-    /** In case not a "real" blockchain should be used uncomment the following: */
-    // adapter = new MockControllerAdapter();
-    // energymarketCtrl = ClientFactory(EnergymarketController, adapter);
-
-    // await adapter.init([
-    //   {
-    //     version: '*',
-    //     controller: 'EnergymarketController',
-    //     name: join(__dirname, '..')
-    //   }
-    // ]);
 
   });
 
@@ -176,6 +150,8 @@ describe('CHAINCODE TEST SERIES', () => {
     expect(savedMARKET.id).to.eql(market.id);
     expect(savedGRID.id).to.eql(grid.id);
   });
+
+
 
   it('UNIT TEST 1: a market participant of type PROSUMER places multiple buy and sell orders which are registered successfully on the ledger', async () => {
 
@@ -275,6 +251,8 @@ describe('CHAINCODE TEST SERIES', () => {
     
   });
 
+
+
   it('UNIT TEST 3: PAR1 sends its actual smart meter consumption and makes sure it is successfully stored on the ledger', async () => {
 
     /** Calculate the sum of all bids and asks placed by PAR1 for AUC1 */
@@ -295,6 +273,8 @@ describe('CHAINCODE TEST SERIES', () => {
     
     expect(savedPAR.readings).to.be.an('array').lengthOf(1);
   });
+
+
 
   it('UNIT TEST 4: 4 market participants each place 2 oders, the market is cleared, readings sumbitted, and market settled', async () => {
 
@@ -501,6 +481,8 @@ describe('CHAINCODE TEST SERIES', () => {
 
   });
 
+
+
   it('UNIT TEST 5: Same as UNIT TEST 4 until clearAuction and test hash function', async () => {
 
     /** Creates an Auction instance */
@@ -607,6 +589,8 @@ describe('CHAINCODE TEST SERIES', () => {
 
   });
 
+
+
   it('UNIT TEST 6: auctions of variable durations', async () => {
 
     /** Creates an Auction instance of 15 minutes */
@@ -635,6 +619,8 @@ describe('CHAINCODE TEST SERIES', () => {
 
   });
 
+
+
   it('UNIT TEST 7: try to place order on closed auction AUC1 is expected to fail', async () => {
 
     let bid = new FullBid({ 
@@ -647,16 +633,13 @@ describe('CHAINCODE TEST SERIES', () => {
 
    
     let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
-      /** Public transaction: bid.id.substring(16,) = orgX */
-      let res1 = await energymarketCtrl[bid.id.substring(16,)].placeBid(publicBid);
-      /** Private transaction */
-      let res2 = await energymarketCtrl[bid.id.substring(16,)]      //[Object.keys(fingerprint).find(key => fingerprint[key] === bid.sender)]
+      /** Promis is expected to be rejected */
+      await expect(energymarketCtrl[bid.id.substring(16,)].placeBid(publicBid)).to.be.rejected;
+      /** Private transaction also expected to be rejected */
+      await expect(energymarketCtrl[bid.id.substring(16,)]      //[Object.keys(fingerprint).find(key => fingerprint[key] === bid.sender)]
         .$config({transient: { bid: bid.toJSON() }})
         .sendBidPrivateDetails()
-        .catch(ex => ex.responses[0].error.message);
-
-     /** @todo expect fail */
-
+        .catch(ex => ex.responses[0].error.message)).to.be.rejected;
 
   });
 
@@ -674,16 +657,14 @@ describe('CHAINCODE TEST SERIES', () => {
     let bidPrivateDetails = new Array<BidPrivateDetails>();
     let askPrivateDetails = new Array<AskPrivateDetails>();
 
-    /** LMO tries to invoke the clear auction transaction */
-    let res = await energymarketCtrl.org1
+    /** LMO tries to invoke the clear auction transaction but Promise is expected to be rejected */
+    await expect(energymarketCtrl.org1
       .$config({transient: { bids: JSON.stringify(bidPrivateDetails) , asks: JSON.stringify(askPrivateDetails) }})
       .clearAuction(auction.id)
-      .catch(ex => ex.responses[0].error.message)
-
-    /** @todo Expects to fail */
-
+      .catch(ex => ex.responses[0].error.message)).to.be.rejected;
 
   });
+
 
 
   it('UNIT TEST 9: not all market participants send their smart meter readings and settleAuction is expected to fail', async () => {
@@ -805,14 +786,11 @@ describe('CHAINCODE TEST SERIES', () => {
     bidPrivateDetails = bids.map(bid => new BidPrivateDetails({id: bid.id, price: bid.price, amount: bid.amount, unmatchedAmount: bid.unmatchedAmount}));
     askPrivateDetails = asks.map(ask => new AskPrivateDetails({id: ask.id, price: ask.price, amount: ask.amount, unmatchedAmount: ask.unmatchedAmount}));
    
-    /** LMO tries to invoke settleAuction transaction */
-    let res = await energymarketCtrl.org1
+    /** LMO tries to invoke settleAuction transaction but Promise is expected to be rejected*/
+    await expect(energymarketCtrl.org1
       .$config({transient: { bids: JSON.stringify(bidPrivateDetails) , asks: JSON.stringify(askPrivateDetails) }})
       .settleAuction(auction.id)
-      .catch(ex => ex.responses[0].error.message);
-
-    /** @todo Test if settleAuction transaction failed */
-
+      .catch(ex => ex.responses[0].error.message)).to.be.rejected;
 
   });
 
@@ -837,18 +815,15 @@ describe('CHAINCODE TEST SERIES', () => {
     });
 
     let publicBid = new Bid({id: bid.id, auctionId: bid.auctionId, sender: bid.sender});
-    /** PAR2 (org4) tries to place the bid in PAR1's name */
-    let res1 = await energymarketCtrl.org4.placeBid(publicBid);
-    let res2 = await energymarketCtrl.org4
+    /** PAR2 (org4) tries to place the bid in PAR1's name but Promises are rejected */
+    await expect(energymarketCtrl.org4.placeBid(publicBid)).to.be.rejected;
+    await expect(energymarketCtrl.org4
       .$config({transient: { bid: bid.toJSON() }})
       .sendBidPrivateDetails()
-      .catch(ex => ex.responses[0].error.message);
-
-    /** @todo expect to fail */
-
-
+      .catch(ex => ex.responses[0].error.message)).to.be.rejected;
 
   });
+
 
 
   it('UNIT TEST 11: market participant tries sending smart meter reading in the name of another participant', async () => {
@@ -875,6 +850,8 @@ describe('CHAINCODE TEST SERIES', () => {
 
   });
 
+  
+
   it('UNIT TEST 12: a market participant tries invoking the clearMarket transaction', async () => {
 
     /** Creates an Auction instance of 1 millisecond */
@@ -889,13 +866,11 @@ describe('CHAINCODE TEST SERIES', () => {
     let bidPrivateDetails = new Array<BidPrivateDetails>();
     let askPrivateDetails = new Array<AskPrivateDetails>();
 
-    /** LMO tries to invoke the clear auction transaction */
-    let res = await energymarketCtrl.org2
+    /** LMO tries to invoke the clear auction transaction but Promise is rejected */
+    await expect(energymarketCtrl.org2
       .$config({transient: { bids: JSON.stringify(bidPrivateDetails) , asks: JSON.stringify(askPrivateDetails) }})
       .clearAuction(auction.id)
-      .catch(ex => ex.responses[0].error.message)
-
-    /** @todo Expects to fail */
+      .catch(ex => ex.responses[0].error.message)).to.be.rejected;
 
   });
 
