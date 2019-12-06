@@ -3,7 +3,7 @@
 
 This repositpry containts the code for my Master's thesis: the implementation of a decentralised application called **hypenergy**, a peer-to-peer marketplace for community-based local electricity markets.
 
-* The full thesis can be downloaded [here](https://github.com/raphmc/thesis//tree/master/thesis/thesis.pdf).
+* The full thesis can be downloaded [here](https://github.com/raphmc/thesis/raw/master/thesis/thesis.pdf).
 * The chaincode describing the transaction logic can be found in: [`packages/energymarket-cc/src`](https://github.com/raphmc/thesis/tree/master/packages/energymarket-cc/src).
 * Test scripts and unit tests can be found in: [`packages/energymarket-cc/tests`](https://github.com/raphmc/thesis/tree/master/packages/energymarket-cc/tests)
 
@@ -31,3 +31,27 @@ This repositpry containts the code for my Master's thesis: the implementation of
 
 * Check out the ledger: [`http://localhost:5084`](http://localhost:5084)
 * A debugger can be connected at [`http://localhost:8888`](http://localhost:8888)
+
+
+## Figures
+
+A community-based local electricity market:
+![Community-Based LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMcommunity.pdf)  
+
+The three layers of a local electricity market:
+![Three Layers of a LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMlayers.pdf)  
+
+This simplified class diagram describes the chaincode model:
+![Model-Controller Class Diagram](https://github.com/raphmc/thesis/raw/master/thesis/figures/classdiagram.pdf)  
+
+The architecture model for the decentralized application:
+![Architecture Model](https://github.com/raphmc/thesis/raw/master/thesis/figures/blockchainnetwork.pdf)  
+
+The functional flow for an exemplary trading period:
+![Functional Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/functionalflow.pdf)  
+
+The transaction flow for an exemplary bid transaction:
+![Bid Transaction Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/bidtransactionflow.pdf)
+
+
+
