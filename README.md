@@ -36,32 +36,24 @@ This repositpry containts the code for my Master's thesis: the implementation of
 ## Figures
 
 ### A community-based local electricity market:
-![Community-Based LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMcommunity.png)  
-
-
+![Community-Based LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMcommunity.png)
+---
 
 ### The three layers of a local electricity market:
-![Three Layers of a LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMlayers.png)  
-
-
+![Three Layers of a LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMlayers.png)
+---
 
 ### This simplified class diagram describes the chaincode model:
-![Model-Controller Class Diagram](https://github.com/raphmc/thesis/raw/master/thesis/figures/classdiagram.png)  
-
-
+![Model-Controller Class Diagram](https://github.com/raphmc/thesis/raw/master/thesis/figures/classdiagram.png)
+---
 
 ### The architecture model for the decentralized application:
-![Architecture Model](https://github.com/raphmc/thesis/raw/master/thesis/figures/blockchainnetwork.png)  
-
-
+![Architecture Model](https://github.com/raphmc/thesis/raw/master/thesis/figures/blockchainnetwork.png)
+---
 
 ### The functional flow for an exemplary trading period:
-![Functional Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/functionalflow.png)  
-
-
+![Functional Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/functionalflow.png)
+---
 
 ### The transaction flow for an exemplary bid transaction:
 ![Bid Transaction Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/bidtransactionflow.png)
-
-
-
