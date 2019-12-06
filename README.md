@@ -4,8 +4,8 @@
 This repositpry containts the code for my Master's thesis: the implementation of a decentralised application called **hypenergy**, a peer-to-peer marketplace for community-based local electricity markets.
 
 * The full thesis can be downloaded [here](https://github.com/raphmc/thesis/raw/master/thesis/thesis.pdf).
-* The chaincode describing the transaction logic can be found in: [`packages/energymarket-cc/src`](https://github.com/raphmc/thesis/tree/master/packages/energymarket-cc/src).
-* Test scripts and unit tests can be found in: [`packages/energymarket-cc/tests`](https://github.com/raphmc/thesis/tree/master/packages/energymarket-cc/tests)
+* The chaincode describing the transaction logic can be found in: [`packages/energymarket-cc/src`](../packages/energymarket-cc/src).
+* Test scripts and unit tests can be found in: [`packages/energymarket-cc/tests`](../packages/energymarket-cc/tests)
 
 
 ## Prerequisites
@@ -35,22 +35,22 @@ This repositpry containts the code for my Master's thesis: the implementation of
 
 ## Figures
 
-A community-based local electricity market:
+#### A community-based local electricity market:
 ![Community-Based LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMcommunity.png)  
 
-The three layers of a local electricity market:
+#### The three layers of a local electricity market:
 ![Three Layers of a LEM](https://github.com/raphmc/thesis/raw/master/thesis/figures/LEMlayers.png)  
 
-This simplified class diagram describes the chaincode model:
+#### This simplified class diagram describes the chaincode model:
 ![Model-Controller Class Diagram](https://github.com/raphmc/thesis/raw/master/thesis/figures/classdiagram.png)  
 
-The architecture model for the decentralized application:
+#### The architecture model for the decentralized application:
 ![Architecture Model](https://github.com/raphmc/thesis/raw/master/thesis/figures/blockchainnetwork.png)  
 
-The functional flow for an exemplary trading period:
+#### The functional flow for an exemplary trading period:
 ![Functional Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/functionalflow.png)  
 
-The transaction flow for an exemplary bid transaction:
+#### The transaction flow for an exemplary bid transaction:
 ![Bid Transaction Flow](https://github.com/raphmc/thesis/raw/master/thesis/figures/bidtransactionflow.png)
 
 
